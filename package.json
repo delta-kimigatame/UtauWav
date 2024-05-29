@@ -10,6 +10,10 @@
     "makedoc": "npx typedoc expand ./src",
     "test":"npx jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delta-kimigatame/UtauWav.git"
+  },
   "keywords": [
     "UTAU",
     "wave",
