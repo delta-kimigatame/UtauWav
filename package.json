@@ -7,7 +7,7 @@
     "build": "webpack --mode=production",
     "prepare": "npm run build",
     "start": "webpack serve --mode=development",
-    "makedoc": "npx typedoc expand ./src",
+    "makedoc": "npx typedoc --entryPointStrategy expand ./src",
     "test":"npx jest"
   },
   "repository": {
