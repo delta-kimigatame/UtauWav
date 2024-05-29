@@ -1,6 +1,6 @@
 /**
  * Waveのヘッダを扱います。
- * WAVEヘッダは、RIFFフォーマットにおけるRIFF識別子 ～ dataサイズまでで、特に拡張されていなければ126Byteのバイナリデータです。
+ * WAVEヘッダは、RIFFフォーマットにおけるRIFF識別子 ～ dataサイズまでで、特に拡張されていなければ44Byteのバイナリデータです。
  */
 
 export default class WaveHeader {
