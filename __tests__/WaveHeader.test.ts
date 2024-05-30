@@ -94,6 +94,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.blockSize).toBe(2);
     expect(whd.bitDepth).toBe(16);
     expect(whd.dataChunkSize).toBe(516096);
+    expect(whd.dataIndex).toBe(44);
   });
   test("read_header_shift_fmt", () => {
     // WAVEとfmtの間に3バイトのジャンクが入った47バイトのヘッダ
@@ -113,6 +114,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.blockSize).toBe(2);
     expect(whd.bitDepth).toBe(16);
     expect(whd.dataChunkSize).toBe(516096);
+    expect(whd.dataIndex).toBe(47);
   });
   test("read_header_shift_data", () => {
     // fmtとdataの間に3バイトのジャンクが入った47バイトのヘッダ
@@ -132,6 +134,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.blockSize).toBe(2);
     expect(whd.bitDepth).toBe(16);
     expect(whd.dataChunkSize).toBe(516096);
+    expect(whd.dataIndex).toBe(47);
   });
   test("read_header_a-law", () => {
     // 44Byteの正常waveヘッダ,a-law

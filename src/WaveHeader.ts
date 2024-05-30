@@ -22,6 +22,8 @@ export default class WaveHeader {
   private bitDepth_: number;
   /**dataチャンクのバイト数 */
   private dataChunkSize_: number;
+  /**dataの開始バイト */
+  private dataIndex_: number;
 
   /**
    *
@@ -44,7 +46,6 @@ export default class WaveHeader {
       );
     }
     this.chunksize_ = dv.getUint32(4, true);
-    console.log(this.chunksize_);
     if (td.decode(data.slice(8, 12)) !== "WAVE") {
       throw new Error(
         "このデータはwaveファイルではありません。WAVE識別子がありません。"
@@ -97,6 +98,7 @@ export default class WaveHeader {
       throw new RangeError("waveヘッダに欠損があります。");
     }
     this.dataChunkSize_ = dv.getUint32(dataStart + 4, true);
+    this.dataIndex_ = dataStart + 8;
   }
 
   /**wavの総バイト数-8 */
@@ -166,5 +168,9 @@ export default class WaveHeader {
   /**dataチャンクのバイト数。Waveクラスからの呼び出しを想定。データ部を書き換えずにここだけを変更してはいけない。 */
   set dataChunkSize(value: number) {
     this.dataChunkSize_ = value;
+  }
+  /**dataの開始バイト */
+  get dataIndex(): number {
+    return this.dataIndex_;
   }
 }
