@@ -111,44 +111,6 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, -1]);
     expect(wave.rData).toEqual([1, 3]);
   });
-  test("read_32bit_mono", () => {
-    // 44Byteの正常waveヘッダ、bitDepth32、1ch、4frame
-    const safeData = new Uint8Array([
-      0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
-      0x66, 0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
-      0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x04, 0x00, 0x20, 0x00,
-      0x64, 0x61, 0x74, 0x61, 0x00, 0xe0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x01, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x03, 0x00, 0x00, 0x00,
-    ]);
-    const wave = new Wave(safeData.buffer);
-    expect(wave.chunksize).toBe(516132);
-    expect(wave.channels).toBe(1);
-    expect(wave.sampleRate).toBe(44100);
-    expect(wave.bytePerSec).toBe(88200);
-    expect(wave.blockSize).toBe(4);
-    expect(wave.bitDepth).toBe(32);
-    expect(wave.data).toEqual([0, 1, -1, 3]);
-    expect(wave.rData).toBe(null);
-  });
-  test("read_32bit_stereo", () => {
-    // 44Byteの正常waveヘッダ、bitDepth32、2ch、4frame
-    const safeData = new Uint8Array([
-      0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
-      0x66, 0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00,
-      0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x08, 0x00, 0x20, 0x00,
-      0x64, 0x61, 0x74, 0x61, 0x00, 0xe0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x01, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x03, 0x00, 0x00, 0x00,
-    ]);
-    const wave = new Wave(safeData.buffer);
-    expect(wave.chunksize).toBe(516132);
-    expect(wave.channels).toBe(2);
-    expect(wave.sampleRate).toBe(44100);
-    expect(wave.bytePerSec).toBe(88200);
-    expect(wave.blockSize).toBe(8);
-    expect(wave.bitDepth).toBe(32);
-    expect(wave.data).toEqual([0, -1]);
-    expect(wave.rData).toEqual([1, 3]);
-  });
   test("read_24bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth24、1ch、4frame
     const safeData = new Uint8Array([
@@ -227,11 +189,6 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1048576, -1048576, 3145728]);
     expect(wave.blockSize).toBe(3);
     expect(wave.bytePerSec).toBe(132300);
-    wave.bitDepth = 32;
-    expect(wave.bitDepth).toBe(32);
-    expect(wave.data).toEqual([0, 268435456, -268435456, 805306368]);
-    expect(wave.blockSize).toBe(4);
-    expect(wave.bytePerSec).toBe(176400);
     // ステレオ確認
     wave.channels = 2;
     wave.bitDepth = 8;

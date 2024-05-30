@@ -60,12 +60,7 @@ export default class Wave {
         if (this.channels === 2) {
           this.rData_?.push(this.GetInt24(dv, i * this.blockSize + 3));
         }
-      } else if (this.bitDepth === 32) {
-        this.data_.push(dv.getInt32(i * this.blockSize, true));
-        if (this.channels === 2) {
-          this.rData_?.push(dv.getInt32(i * this.blockSize + 4, true));
-        }
-      }
+      } 
     }
   }
 
@@ -139,7 +134,7 @@ export default class Wave {
    * ビット深度
    * this.data、this.rData、this.blockSize,this.bytePerSecもあわせて変更する。
    * data部分の変更は、data = data / (2 ** (this.bitDepth-1)) *  (2 ** (value-1))
-   * @param value 8か16か24か32。それ以外の値の場合何もしない。
+   * @param value 8か16か24。それ以外の値の場合何もしない。
    */
   set bitDepth(value: number) {
     if (value % 8 !== 0 || value > 32) {
