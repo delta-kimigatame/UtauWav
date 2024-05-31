@@ -1,4 +1,5 @@
 import Wave from "../src/Wave";
+import fs from "fs";
 
 describe("Waveのテスト", () => {
   test("read_only_header", () => {
@@ -197,5 +198,64 @@ describe("Waveのテスト", () => {
     expect(wave.rData).toEqual([0, 16, -16, 48]);
     expect(wave.blockSize).toBe(2);
     expect(wave.bytePerSec).toBe(88200);
+  });
+
+  test("setSampleRateMonoJust", () => {
+    const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(48000);
+    wav.sampleRate = 8000;
+    expect(wav.sampleRate).toBe(8000);
+    expect(wav.data?.slice(0, 4)).toEqual([1, 15, 27, 40]);
+  });
+  test("setSampleRateStereoJust", () => {
+    const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(48000);
+    wav.channels = 2;
+    wav.sampleRate = 8000;
+    expect(wav.sampleRate).toBe(8000);
+    expect(wav.data?.slice(0, 4)).toEqual([1, 15, 27, 40]);
+    expect(wav.rData?.slice(0, 4)).toEqual([1, 15, 27, 40]);
+  });
+  test("setSampleRateMonoNotJust", () => {
+    const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_44100_16.wav");
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(44100);
+    wav.sampleRate = 8000;
+    expect(wav.sampleRate).toBe(8000);
+    expect(wav.data?.slice(0, 4)).toEqual([1, 13, 24, 39]);
+  });
+  test("setSampleRateMonoAdd", () => {
+    const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(48000);
+    wav.sampleRate = 96000;
+    expect(wav.sampleRate).toBe(96000);
+    expect(wav.data?.slice(0, 8)).toEqual([1, 1, 0, 4, 8, 6, 3, 7]);
   });
 });

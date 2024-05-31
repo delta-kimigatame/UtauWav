@@ -60,7 +60,7 @@ export default class Wave {
         if (this.channels === 2) {
           this.rData_?.push(this.GetInt24(dv, i * this.blockSize + 3));
         }
-      } 
+      }
     }
   }
 
@@ -117,6 +117,66 @@ export default class Wave {
   get sampleRate(): number {
     return this.header.sampleRate;
   }
+
+  /**
+   * サンプリング周波数
+   * this.data、this.rData部分はサンプリング周波数の変換結果に基づいて線形補完する。
+   * this.header.bytePerSec、thid.header.dataChunkSize,this.header.chunkSizeを合わせて変更する。
+   * @param value 
+   */
+  set sampleRate(value: number) {
+    if (this.data !== null) {
+      const wavsec: number = this.data.length / this.sampleRate;
+      const framePerSec: number = 1 / this.sampleRate;
+      const newFramePerSec: number = 1 / value;
+      const newFlames: number = wavsec * value;
+      const newData: Array<number> = new Array();
+      let newRData: Array<number> | null = null;
+      if (this.channels === 2) {
+        newRData = new Array();
+      }
+      for (let i = 0; i < newFlames; i++) {
+        const startFlame: number = (newFramePerSec * i) / framePerSec;
+        if (startFlame === Math.floor(startFlame)) {
+          // 既存のframeと一致するポイント
+          newData.push(this.data[startFlame]);
+          if (newRData !== null && this.rData !== null) {
+            newRData.push(this.rData[startFlame]);
+          }
+        } else {
+          // 既存のframeと一致しないポイント(線形補完)
+          const offsetFrames: number = startFlame - Math.floor(startFlame);
+          newData.push(
+            this.data[Math.floor(startFlame)] +
+              Math.round(
+                (this.data[Math.ceil(startFlame)] -
+                  this.data[Math.floor(startFlame)]) *
+                  offsetFrames
+              )
+          );
+          if (newRData !== null && this.rData !== null) {
+            newRData.push(
+              this.rData[Math.floor(startFlame)] +
+                Math.round(
+                  (this.rData[Math.ceil(startFlame)] -
+                    this.rData[Math.floor(startFlame)]) *
+                    offsetFrames
+                )
+            );
+          }
+        }
+      }
+      this.data_ = newData;
+      this.rData_ = newRData;
+      this.header.sampleRate = value;
+      this.header.bytePerSec = this.blockSize * this.sampleRate;
+      const newDataChunkSize: number = this.blockSize * newFlames;
+      this.header.chunksize =
+        this.header.chunksize - this.header.dataChunkSize + newDataChunkSize;
+      this.header.dataChunkSize = this.blockSize * newFlames;
+    }
+  }
+
   /**1秒間のバイト数 サンプリング周波数 * ブロックサイズ*/
   get bytePerSec(): number {
     return this.header.bytePerSec;
