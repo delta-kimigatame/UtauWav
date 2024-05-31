@@ -105,6 +105,41 @@ export default class WaveHeader {
     this.dataIndex_ = dataStart + 8;
   }
 
+  /**
+   * wavヘッダを書き出す。
+   * @returns 不要なチャンクを含まない44Byte リトルエンディアンのwavヘッダ
+   */
+  Output(): ArrayBuffer {
+    const data = new ArrayBuffer(44);
+    const dv = new DataView(data);
+    dv.setUint8(0, "R".charCodeAt(0));
+    dv.setUint8(1, "I".charCodeAt(0));
+    dv.setUint8(2, "F".charCodeAt(0));
+    dv.setUint8(3, "F".charCodeAt(0));
+    dv.setUint32(4, this.chunksize, true);
+    dv.setUint8(8, "W".charCodeAt(0));
+    dv.setUint8(9, "A".charCodeAt(0));
+    dv.setUint8(10, "V".charCodeAt(0));
+    dv.setUint8(11, "E".charCodeAt(0));
+    dv.setUint8(12, "f".charCodeAt(0));
+    dv.setUint8(13, "m".charCodeAt(0));
+    dv.setUint8(14, "t".charCodeAt(0));
+    dv.setUint8(15, " ".charCodeAt(0));
+    dv.setUint32(16, this.fmtChunkSize, true);
+    dv.setUint16(20, this.format, true);
+    dv.setUint16(22, this.channels, true);
+    dv.setUint32(24, this.sampleRate, true);
+    dv.setUint32(28, this.bytePerSec, true);
+    dv.setUint16(32, this.blockSize, true);
+    dv.setUint16(34, this.bitDepth, true);
+    dv.setUint8(36, "d".charCodeAt(0));
+    dv.setUint8(37, "a".charCodeAt(0));
+    dv.setUint8(38, "t".charCodeAt(0));
+    dv.setUint8(39, "a".charCodeAt(0));
+    dv.setUint32(40, this.dataChunkSize, true);
+    return data;
+  }
+
   /**wavの総バイト数-8 */
   get chunksize(): number {
     return this.chunksize_;
