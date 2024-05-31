@@ -1,6 +1,6 @@
 {
   "name": "utauwav",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -21,7 +21,7 @@
   ],
   "author": "delta_kimigatame",
   "license": "MIT",
-  "description": "",
+  "description": "IO wav audio for UTAU",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
