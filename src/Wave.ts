@@ -65,6 +65,40 @@ export default class Wave {
   }
 
   /**
+   * wavデータを出力する。
+   * @returns リトルエンディアンのwavデータ。ヘッダ部は不要データを含まず44Byte
+   */
+  Output(): ArrayBuffer {
+    const body = new ArrayBuffer(this.header.dataChunkSize);
+    const dv = new DataView(body);
+    const frames: number = this.header.dataChunkSize / this.blockSize;
+    for (let i = 0; i < frames; i++) {
+      if (this.data === null) {
+      } else if (this.bitDepth === 8) {
+        dv.setInt8(i * this.blockSize, this.data[i]);
+        if (this.channels === 2 && this.rData !== null) {
+          dv.setInt8(i * this.blockSize + 1, this.rData[i]);
+        }
+      } else if (this.bitDepth === 16) {
+        dv.setInt16(i * this.blockSize, this.data[i], true);
+        if (this.channels === 2 && this.rData !== null) {
+          dv.setInt16(i * this.blockSize + 2, this.rData[i], true);
+        }
+      } else if (this.bitDepth === 24) {
+        this.SetInt24(dv, i * this.blockSize, this.data[i]);
+        if (this.channels === 2 && this.rData !== null) {
+          this.SetInt24(dv, i * this.blockSize + 3, this.rData[i]);
+        }
+      }
+    }
+    const header = this.header.Output();
+    const data = new Uint8Array(header.byteLength + body.byteLength);
+    data.set(new Uint8Array(header), 0);
+    data.set(new Uint8Array(body), 44);
+    return data.buffer;
+  }
+
+  /**
    * 24bitのwavデータを整数に変換する
    * @param dv wavのデータ部
    * @param index 読込開始バイト、このindexから3バイト分を読み込む
@@ -76,6 +110,20 @@ export default class Wave {
       value = value - 2 ** 24;
     }
     return value;
+  }
+
+  /**
+   * 24bitの整数をバイナリに変換する。
+   * @param dv 書き込むDataView
+   * @param index 書き込み開始バイト、このindexから3バイト分書き込む
+   * @param value 書き込む値。Int24
+   */
+  SetInt24(dv: DataView, index: number, value: number) {
+    if (value < 0) {
+      value = value + 2 ** 24;
+    }
+    dv.setUint16(index, value & 65535, true);
+    dv.setUint8(index + 2, value & 16711680);
   }
 
   /**wavの総バイト数-8 */
@@ -122,7 +170,7 @@ export default class Wave {
    * サンプリング周波数
    * this.data、this.rData部分はサンプリング周波数の変換結果に基づいて線形補完する。
    * this.header.bytePerSec、thid.header.dataChunkSize,this.header.chunkSizeを合わせて変更する。
-   * @param value 
+   * @param value
    */
   set sampleRate(value: number) {
     if (this.data !== null) {
