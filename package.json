@@ -19,6 +19,7 @@
     "wave",
     "wav"
   ],
+  "homepage": "https://delta-kimigatame.github.io/UtauWav/index.html",
   "author": "delta_kimigatame",
   "license": "MIT",
   "description": "IO wav audio for UTAU",
