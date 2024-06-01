@@ -33,6 +33,13 @@ export default class Wave {
      * @param value 書き込む値。Int24
      */
     SetInt24(dv: DataView, index: number, value: number): void;
+    /**
+     * wavデータのDCオフセットを除去する。
+     * 理想的なwavデータは正と負の総量が均等 = 平均が0となるはずである。
+     * データがそのような形になっていないのは、直流成分(DC)があると解釈し、その値を取り除く。
+     * 2chの場合それぞれのチャンネルに処理する。
+     */
+    RemoveDCOffset(): void;
     /**wavの総バイト数-8 */
     get chunksize(): number;
     /**チャンネル数 */

@@ -4,6 +4,7 @@
  */
 
 import WaveHeader from "./WaveHeader";
+import WaveProcessing from "./WaveProcessing";
 
 export default class Wave {
   /**waveヘッダ */
@@ -126,6 +127,21 @@ export default class Wave {
     dv.setUint8(index + 2, value & 16711680);
   }
 
+  /**
+   * wavデータのDCオフセットを除去する。
+   * 理想的なwavデータは正と負の総量が均等 = 平均が0となるはずである。
+   * データがそのような形になっていないのは、直流成分(DC)があると解釈し、その値を取り除く。
+   * 2chの場合それぞれのチャンネルに処理する。
+   */
+  RemoveDCOffset(){
+    const wp = new WaveProcessing();
+    if(this.data!==null){
+      this.data_=wp.RemoveDCOffset(this.data)
+    }
+    if(this.rData!==null){
+      this.rData_=wp.RemoveDCOffset(this.rData)
+    }
+  }
   /**wavの総バイト数-8 */
   get chunksize(): number {
     return this.header.chunksize;
