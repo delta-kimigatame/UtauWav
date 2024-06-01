@@ -40,6 +40,27 @@ export default class Wave {
      * 2chの場合それぞれのチャンネルに処理する。
      */
     RemoveDCOffset(): void;
+    /**
+     * 音量ノーマライズ
+     * @param data waveのデータ部
+     * @param bitDepth waveのビット深度
+     * @returns 絶対値の最大値が 2 ** (bitDepth-1) -1となるwavデータ
+     */
+    VolumeNormalize(): void;
+    /**
+     * データ上のノーマライズ。 \
+     * 当該bit深度での理論上の最大値が1となるよう正規化する。 \
+     * 小数値となっているため、このままではwavへの書き出しはできない。
+     * @param targetChannels 対象チャンネル。1ならLch、2ならRch。wavのchannnelsが1の場合無視される。
+     * @returns 理論上の最大値が1となるwaveデータ
+     */
+    LogicalNormalize(targetChannels: number): Array<number> | null;
+    /**
+     * LogicalNormalize済のデータをintに戻してwavにセットする。。
+     * @param data LogicalNormalize済(最大値1)のwaveデータ
+     * @param targetChannels 対象チャンネル。1ならLch、2ならRch。wavのchannnelsが1の場合無視される。
+     */
+    InverseLogicalNormalize(data: Array<number>, targetChannels: number): void;
     /**wavの総バイト数-8 */
     get chunksize(): number;
     /**チャンネル数 */

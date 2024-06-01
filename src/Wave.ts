@@ -133,15 +133,63 @@ export default class Wave {
    * データがそのような形になっていないのは、直流成分(DC)があると解釈し、その値を取り除く。
    * 2chの場合それぞれのチャンネルに処理する。
    */
-  RemoveDCOffset(){
+  RemoveDCOffset() {
     const wp = new WaveProcessing();
-    if(this.data!==null){
-      this.data_=wp.RemoveDCOffset(this.data)
+    if (this.data !== null) {
+      this.data_ = wp.RemoveDCOffset(this.data);
     }
-    if(this.rData!==null){
-      this.rData_=wp.RemoveDCOffset(this.rData)
+    if (this.rData !== null) {
+      this.rData_ = wp.RemoveDCOffset(this.rData);
     }
   }
+
+  /**
+   * 音量ノーマライズ
+   * @param data waveのデータ部
+   * @param bitDepth waveのビット深度
+   * @returns 絶対値の最大値が 2 ** (bitDepth-1) -1となるwavデータ
+   */
+  VolumeNormalize() {
+    const wp = new WaveProcessing();
+    if (this.data !== null) {
+      this.data_ = wp.VolumeNormalize(this.data, this.bitDepth);
+    }
+    if (this.rData !== null) {
+      this.rData_ = wp.VolumeNormalize(this.rData, this.bitDepth);
+    }
+  }
+  /**
+   * データ上のノーマライズ。 \
+   * 当該bit深度での理論上の最大値が1となるよう正規化する。 \
+   * 小数値となっているため、このままではwavへの書き出しはできない。
+   * @param targetChannels 対象チャンネル。1ならLch、2ならRch。wavのchannnelsが1の場合無視される。
+   * @returns 理論上の最大値が1となるwaveデータ
+   */
+  LogicalNormalize(targetChannels: number): Array<number> | null {
+    const wp = new WaveProcessing();
+    if (this.data !== null && (this.channels === 1 || targetChannels === 1)) {
+      return wp.LogicalNormalize(this.data, this.bitDepth);
+    } else if (this.rData !== null && targetChannels === 2) {
+      return wp.LogicalNormalize(this.rData, this.bitDepth);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * LogicalNormalize済のデータをintに戻してwavにセットする。。
+   * @param data LogicalNormalize済(最大値1)のwaveデータ
+   * @param targetChannels 対象チャンネル。1ならLch、2ならRch。wavのchannnelsが1の場合無視される。
+   */
+  InverseLogicalNormalize(data: Array<number>,targetChannels: number){
+    const wp = new WaveProcessing();
+    if (this.channels === 1 || targetChannels === 1) {
+      this.data_ = wp.InverseLogicalNormalize(data, this.bitDepth);
+    } else if (targetChannels === 2) {
+      this.rData_ = wp.InverseLogicalNormalize(data, this.bitDepth);
+    } 
+  }
+
   /**wavの総バイト数-8 */
   get chunksize(): number {
     return this.header.chunksize;
