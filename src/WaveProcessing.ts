@@ -25,4 +25,57 @@ export default class WaveProcessing {
     });
     return newData;
   }
+
+  /**
+   * 音量ノーマライズ
+   * @param data waveのデータ部
+   * @param bitDepth waveのビット深度
+   * @returns 絶対値の最大値が 2 ** (bitDepth-1) -1となるwavデータ
+   */
+  VolumeNormalize(data: Array<number>, bitDepth: number): Array<number> {
+    const newData: Array<number> = new Array();
+    let maxValue = 0;
+    data.forEach((d: number) => {
+      if (Math.abs(d) > maxValue) {
+        maxValue = Math.abs(d);
+      }
+    });
+    data.forEach((d: number) => {
+      newData.push(Math.round((d / maxValue) * (2 ** (bitDepth - 1) - 1)));
+    });
+    return newData;
+  }
+
+  /**
+   * データ上のノーマライズ。 \
+   * 当該bit深度での理論上の最大値が1となるよう正規化する。 \
+   * 小数値となっているため、このままではwavへの書き出しはできない。
+   * @param data waveのデータ部
+   * @param bitDepth waveのビット深度
+   * @returns 理論上の最大値が1となるwaveデータ
+   */
+  LogicalNormalize(data: Array<number>, bitDepth: number): Array<number> {
+    const newData: Array<number> = new Array();
+    data.forEach((d: number) => {
+      newData.push(d / 2 ** (bitDepth - 1));
+    });
+    return newData;
+  }
+
+  /**
+   * LogicalNormalize済のデータをintに戻す。
+   * @param data LogicalNormalize済(最大値1)のwaveデータ
+   * @param bitDepth waveのビット深度
+   * @returns waveのデータ(int)
+   */
+  InverseLogicalNormalize(
+    data: Array<number>,
+    bitDepth: number
+  ): Array<number> {
+    const newData: Array<number> = new Array();
+    data.forEach((d: number) => {
+      newData.push(Math.round(d * 2 ** (bitDepth - 1)));
+    });
+    return newData;
+  }
 }
