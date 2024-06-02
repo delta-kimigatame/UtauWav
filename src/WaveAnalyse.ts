@@ -31,11 +31,9 @@ export default class WaveAnalyse {
     const rangeFrames = rangeSec * sampleRate;
     const windowFrames = windowSec * sampleRate;
     const window: Array<number> = this.MakeWindow(windowType, windowFrames);
-    console.log(preEmphasisdData);
-    for (let i = 0; i < preEmphasisdData.length; i++) {
+    for (let i = 0; i < preEmphasisdData.length; i += windowFrames) {
       let total = 0;
       const targetFrames = preEmphasisdData.slice(i, i + rangeFrames);
-      console.log(targetFrames);
       for (let j = 0; j < targetFrames.length; j++) {
         const tmp = targetFrames[j] * window[j % windowFrames];
         total = total + tmp ** 2;
@@ -48,8 +46,7 @@ export default class WaveAnalyse {
   /**
    * スペクトログラムを返す \
    * 1次側は時間軸でframe数-fftSize個のデータがある。 \
-   * 2次側は周波数方向の分解能でsampleRate/fftSizeの周波数毎のスペクトルを複素数で表す。 \
-   * 複素数の実部は振幅、虚部は位相に相当する。
+   * 2次側は周波数方向の分解能でsampleRate/fftSizeの周波数毎のスペクトルを複素数で表す。
    * @param data 1で正規化されたwavのデータ
    * @param fftSize fftのフレーム数、2のべき乗である必要がある。default,512
    * @param windowType 窓関数の種類、hanningもしくはhamming。default,hamming
@@ -63,11 +60,11 @@ export default class WaveAnalyse {
     windowType: string = "hamming",
     windowSize: number = 128,
     preEmphasis: number = 0.97
-  ): Array<Array<Complex>> {
+  ): Array<Array<number>> {
     const spectrogram: Array<Array<Complex>> = new Array();
     const preEmphasisdData: Array<number> = this.PreEmphasis(data, preEmphasis);
     const window: Array<number> = this.MakeWindow(windowType, windowSize);
-    for (let i = 0; i + fftSize < preEmphasisdData.length; i++) {
+    for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
       const targetFrames = preEmphasisdData.slice(i, i + fftSize);
       const complexValue: Array<Complex> = new Array();
       for (let j = 0; j < targetFrames.length; j++) {
@@ -77,8 +74,16 @@ export default class WaveAnalyse {
       }
       spectrogram.push(fft(complexValue));
     }
+    const logSpectrogram: Array<Array<number>> = new Array();
+    spectrogram.forEach((s1) => {
+      const s: Array<number> = new Array();
+      s1.forEach((s2) => {
+        s.push(10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5));
+      });
+      logSpectrogram.push(s);
+    });
 
-    return spectrogram;
+    return logSpectrogram;
   }
 
   /**

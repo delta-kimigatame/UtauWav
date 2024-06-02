@@ -1,7 +1,6 @@
 /**
  * Waveを分析し、特徴量を返す。
  */
-import Complex from "./Complex";
 export default class WaveAnalyse {
     constructor();
     /**
@@ -18,8 +17,7 @@ export default class WaveAnalyse {
     /**
      * スペクトログラムを返す \
      * 1次側は時間軸でframe数-fftSize個のデータがある。 \
-     * 2次側は周波数方向の分解能でsampleRate/fftSizeの周波数毎のスペクトルを複素数で表す。 \
-     * 複素数の実部は振幅、虚部は位相に相当する。
+     * 2次側は周波数方向の分解能でsampleRate/fftSizeの周波数毎のスペクトルを複素数で表す。
      * @param data 1で正規化されたwavのデータ
      * @param fftSize fftのフレーム数、2のべき乗である必要がある。default,512
      * @param windowType 窓関数の種類、hanningもしくはhamming。default,hamming
@@ -27,7 +25,7 @@ export default class WaveAnalyse {
      * @param preEmphasis プリエンファシスの強さ。default,0.97
      * @returns スペクトログラム。
      */
-    Spectrogram(data: Array<number>, fftSize?: number, windowType?: string, windowSize?: number, preEmphasis?: number): Array<Array<Complex>>;
+    Spectrogram(data: Array<number>, fftSize?: number, windowType?: string, windowSize?: number, preEmphasis?: number): Array<Array<number>>;
     /**
      * プリエンファシスフィルタ。高周波数帯を強調する効果がある。
      * @param data 1で正規化されたwavのデータ
