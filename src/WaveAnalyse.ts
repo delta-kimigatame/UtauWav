@@ -28,11 +28,11 @@ export default class WaveAnalyse {
     const rangeFrames = rangeSec * sampleRate;
     const windowFrames = windowSec * sampleRate;
     const window: Array<number> = this.MakeWindow(windowType, windowFrames);
-    console.log(preEmphasisdData)
+    console.log(preEmphasisdData);
     for (let i = 0; i < preEmphasisdData.length; i++) {
       let total = 0;
       const targetFrames = preEmphasisdData.slice(i, i + rangeFrames);
-      console.log(targetFrames)
+      console.log(targetFrames);
       for (let j = 0; j < targetFrames.length; j++) {
         const tmp = targetFrames[j] * window[j % windowFrames];
         total = total + tmp ** 2;
@@ -78,4 +78,6 @@ export default class WaveAnalyse {
     }
     return window;
   }
+
+  
 }
