@@ -17,9 +17,11 @@ describe("Complexのテスト", () => {
     c1.Expi(Math.PI / 2);
     expect(c1.re).toBeCloseTo(0);
     expect(c1.sub).toBeCloseTo(1);
-    c1.Expi(Math.PI / 4);
+    const c2 = c1.Expi(Math.PI / 4);
     expect(c1.re).toBeCloseTo(1 / Math.sqrt(2));
     expect(c1.sub).toBeCloseTo(1 / Math.sqrt(2));
+    expect(c2.re).toBeCloseTo(1 / Math.sqrt(2));
+    expect(c2.sub).toBeCloseTo(1 / Math.sqrt(2));
   });
   test("add", () => {
     const c1 = new Complex(1, 2);

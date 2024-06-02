@@ -17,9 +17,10 @@ export default class Complex {
    * 実数から複素数を得る
    * @param theta 位相
    */
-  Expi(theta: number) {
+  Expi(theta: number):Complex {
     this.re = Math.cos(theta);
     this.sub = Math.sin(theta);
+    return this
   }
 
   /**
