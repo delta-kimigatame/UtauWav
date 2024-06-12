@@ -181,13 +181,13 @@ export default class Wave {
    * @param data LogicalNormalize済(最大値1)のwaveデータ
    * @param targetChannels 対象チャンネル。1ならLch、2ならRch。wavのchannnelsが1の場合無視される。
    */
-  InverseLogicalNormalize(data: Array<number>,targetChannels: number){
+  InverseLogicalNormalize(data: Array<number>, targetChannels: number) {
     const wp = new WaveProcessing();
     if (this.channels === 1 || targetChannels === 1) {
       this.data_ = wp.InverseLogicalNormalize(data, this.bitDepth);
     } else if (targetChannels === 2) {
       this.rData_ = wp.InverseLogicalNormalize(data, this.bitDepth);
-    } 
+    }
   }
 
   /**wavの総バイト数-8 */
@@ -241,7 +241,7 @@ export default class Wave {
       const wavsec: number = this.data.length / this.sampleRate;
       const framePerSec: number = 1 / this.sampleRate;
       const newFramePerSec: number = 1 / value;
-      const newFlames: number = wavsec * value;
+      const newFlames: number = Math.ceil(wavsec * value);
       const newData: Array<number> = new Array();
       let newRData: Array<number> | null = null;
       if (this.channels === 2) {
@@ -261,7 +261,9 @@ export default class Wave {
           newData.push(
             this.data[Math.floor(startFlame)] +
               Math.round(
-                (this.data[Math.ceil(startFlame)] -
+                (this.data[
+                  Math.min(Math.ceil(startFlame), this.data.length - 1)
+                ] -
                   this.data[Math.floor(startFlame)]) *
                   offsetFrames
               )
