@@ -339,4 +339,77 @@ export default class Wave {
   get rData(): Array<number> | null {
     return this.rData_;
   }
+
+  /**
+   * 新しいデータを与えてWaveオブジェクトを変更する。
+   * ヘッダは与えられたデータにあわせて自動で変更される。
+   * @param data wavのLchのデータ。
+   * @param rData wavのRchのデータもしくはnull
+   */
+  SetDate(data: Array<number>, rData: Array<number> | null = null) {
+    this.data_ = data;
+    this.rData_ = rData;
+    if (rData !== null) {
+      this.channels = 2;
+    } else {
+      this.channels = 1;
+    }
+    const newDataChunkSize: number = this.blockSize * data.length;
+    this.header.chunksize =
+      this.header.chunksize - this.header.dataChunkSize + newDataChunkSize;
+    this.header.dataChunkSize = this.blockSize * newDataChunkSize;
+  }
 }
+
+/**
+ * 諸元を与えてWaveオブジェクトを生成する。
+ * @param sampleRate サンプリング周波数
+ * @param bitDepth ビット深度
+ * @param data wavのLchのデータ。
+ * @param rData wavのRchのデータもしくはnull
+ * @returns waveオブジェクト
+ */
+export const GenerateWave = (
+  sampleRate: number,
+  bitDepth: number,
+  data: Array<number>,
+  rData: Array<number> | null = null
+): Wave => {
+  let channels = 1;
+  if (rData !== null) {
+    channels = 2;
+  }
+  const blockSize = (channels * bitDepth) / 8;
+  const bytePerSec = blockSize * sampleRate;
+  const headerData = new ArrayBuffer(44);
+  const dataChunkSize = data.length * blockSize;
+  const dv = new DataView(headerData);
+  dv.setUint8(0, "R".charCodeAt(0));
+  dv.setUint8(1, "I".charCodeAt(0));
+  dv.setUint8(2, "F".charCodeAt(0));
+  dv.setUint8(3, "F".charCodeAt(0));
+  dv.setUint32(4, dataChunkSize + 36, true);
+  dv.setUint8(8, "W".charCodeAt(0));
+  dv.setUint8(9, "A".charCodeAt(0));
+  dv.setUint8(10, "V".charCodeAt(0));
+  dv.setUint8(11, "E".charCodeAt(0));
+  dv.setUint8(12, "f".charCodeAt(0));
+  dv.setUint8(13, "m".charCodeAt(0));
+  dv.setUint8(14, "t".charCodeAt(0));
+  dv.setUint8(15, " ".charCodeAt(0));
+  dv.setUint32(16, 16, true);
+  dv.setUint16(20, 1, true);
+  dv.setUint16(22, channels, true);
+  dv.setUint32(24, sampleRate, true);
+  dv.setUint32(28, bytePerSec, true);
+  dv.setUint16(32, blockSize, true);
+  dv.setUint16(34, bitDepth, true);
+  dv.setUint8(36, "d".charCodeAt(0));
+  dv.setUint8(37, "a".charCodeAt(0));
+  dv.setUint8(38, "t".charCodeAt(0));
+  dv.setUint8(39, "a".charCodeAt(0));
+  dv.setUint32(40, dataChunkSize, true);
+  const wave = new Wave(headerData);
+  wave.SetDate(data, rData);
+  return wave;
+};

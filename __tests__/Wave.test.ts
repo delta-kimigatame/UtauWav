@@ -1,4 +1,5 @@
 import Wave from "../src/Wave";
+import { GenerateWave } from "../src/Wave";
 import fs from "fs";
 
 describe("Waveのテスト", () => {
@@ -373,5 +374,27 @@ describe("Waveのテスト", () => {
     expect(wav.sampleRate).toBe(48000);
     wav.sampleRate = 44100;
     wav.Output();
+  });
+  test("generate_test", () => {
+    const wave = GenerateWave(44100, 16, [0, 1, -1, 3]);
+    expect(wave.chunksize).toBe(44);
+    expect(wave.channels).toBe(1);
+    expect(wave.sampleRate).toBe(44100);
+    expect(wave.bytePerSec).toBe(88200);
+    expect(wave.blockSize).toBe(2);
+    expect(wave.bitDepth).toBe(16);
+    expect(wave.data).toEqual([0, 1, -1, 3]);
+    expect(wave.rData).toBe(null);
+  });
+  test("generate_test_stereo", () => {
+    const wave = GenerateWave(44100, 16, [0, 1, -1, 3], [0, 2, -2, 5]);
+    expect(wave.chunksize).toBe(52);
+    expect(wave.channels).toBe(2);
+    expect(wave.sampleRate).toBe(44100);
+    expect(wave.bytePerSec).toBe(176400);
+    expect(wave.blockSize).toBe(4);
+    expect(wave.bitDepth).toBe(16);
+    expect(wave.data).toEqual([0, 1, -1, 3]);
+    expect(wave.rData).toEqual([0, 2, -2, 5]);
   });
 });

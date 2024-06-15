@@ -100,4 +100,20 @@ export default class Wave {
     get data(): Array<number> | null;
     /**wavデータのRch、UTAUでは通常使用しない */
     get rData(): Array<number> | null;
+    /**
+     * 新しいデータを与えてWaveオブジェクトを変更する。
+     * ヘッダは与えられたデータにあわせて自動で変更される。
+     * @param data wavのLchのデータ。
+     * @param rData wavのRchのデータもしくはnull
+     */
+    SetDate(data: Array<number>, rData?: Array<number> | null): void;
 }
+/**
+ * 諸元を与えてWaveオブジェクトを生成する。
+ * @param sampleRate サンプリング周波数
+ * @param bitDepth ビット深度
+ * @param data wavのLchのデータ。
+ * @param rData wavのRchのデータもしくはnull
+ * @returns waveオブジェクト
+ */
+export declare const GenerateWave: (sampleRate: number, bitDepth: number, data: Array<number>, rData?: Array<number> | null) => Wave;
