@@ -1,3 +1,4 @@
 /node_modules
 memo.txt
 __tests__/test_data/error_test_data_20240612.wav
+__tests__/test_data/error_test_dcoffset_20240623.wav

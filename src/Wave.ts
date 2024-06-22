@@ -237,6 +237,7 @@ export default class Wave {
    * @param value
    */
   set sampleRate(value: number) {
+    if(value===this.sampleRate) return
     if (this.data !== null) {
       const wavsec: number = this.data.length / this.sampleRate;
       const framePerSec: number = 1 / this.sampleRate;
@@ -311,6 +312,7 @@ export default class Wave {
    * @param value 8か16か24。それ以外の値の場合何もしない。
    */
   set bitDepth(value: number) {
+    if(value===this.bitDepth) return
     if (value % 8 !== 0 || value > 32) {
       //waveのbit深度は8,16,24,32のためそれ以外の値は何もせず返す。
       return;

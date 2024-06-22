@@ -397,4 +397,25 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toEqual([0, 2, -2, 5]);
   });
+  test("RemoveDCOffset_errordata_20240623", () => {
+    const buffer = fs.readFileSync(
+      "./__tests__/test_data/error_test_dcoffset_20240623.wav"
+    );
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    console.log(wav.data);
+    wav.channels = 1;
+    wav.sampleRate = 44100;
+    wav.bitDepth = 16;
+    console.log(wav.data?.slice(-1));
+    wav.RemoveDCOffset();
+    if (wav.data !== null) {
+      expect(wav.data[0]).not.toBeNaN();
+      console.log(wav.data);
+    }
+  });
 });
