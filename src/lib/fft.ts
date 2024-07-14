@@ -19,7 +19,7 @@ const revBit = (k: number, n: number): number => {
 /**
  * FFTとiFFTの共通処理部分
  * @param c 変換元データ
- * @param T
+ * @param T 回転因子
  * @param N 要素数
  * @returns
  */
@@ -61,3 +61,76 @@ export const ifft = (F: Array<Complex>): Array<Complex> => {
   const result = fftin(F, T, N).map((c) => new Complex(c.re / N, c.sub / N));
   return result;
 };
+
+/**
+ * FFTに必要な計算のうち、fftsizeに依存する計算を各フレームで共有することで高速化を図る。
+ */
+export class FFT {
+  /** fftsize。2のべき乗 */
+  size: number;
+
+  /** fftsizeが2の何乗か? */
+  k: number;
+
+  /** fft用の回転因子。fftsizeに依存する複素数の列 */
+  twiddle: Array<Complex>;
+
+  /** ifft用の回転因子。fftsizeに依存する複素数の列 */
+  itwiddle: Array<Complex>;
+
+  constructor(size: number) {
+    this.size = size;
+    this.k = Math.log2(this.size);
+    this.twiddle = new Array();
+    this.itwiddle = new Array();
+    const T = (-2 * Math.PI) / this.size;
+    const iT = (2 * Math.PI) / this.size;
+    for (let i = 0; i < this.size; i++) {
+      this.twiddle.push(new Complex().Expi(T * i));
+      this.itwiddle.push(new Complex().Expi(iT * i));
+    }
+  }
+
+  /**
+   * FFTとiFFTの共通処理部分
+   * @param c 変換元データ
+   * @param twiddle 回転因子
+   * @returns
+   */
+  fftin = (c: Array<Complex>, twiddle: Array<Complex>): Array<Complex> => {
+    const rec: Array<Complex> = c.map((_, i: number) => c[revBit(this.k, i)]);
+    let T = this.size;
+    for (let Nh = 1; Nh < this.size; Nh *= 2) {
+      T /= 2;
+      for (let s = 0; s < this.size; s += Nh * 2) {
+        for (let i = 0; i < Nh; i++) {
+          const l = rec[s + i];
+          const re = rec[s + i + Nh].Mul(twiddle[T * i]);
+          [rec[s + i], rec[s + i + Nh]] = [l.Add(re), l.Sub(re)];
+        }
+      }
+    }
+    return rec;
+  };
+
+  /**
+   * 高速フーリエ変換、f.lengthが2のべき乗である必要がある。
+   * @param f 実部がwavのフレームデータ、虚部が0の複素数
+   * @returns 周波数スペクトル
+   */
+  fft = (f: Array<Complex>): Array<Complex> => {
+    return this.fftin(f, this.twiddle);
+  };
+
+  /**
+   * 逆高速フーリエ変換、F.lengthが2のべき乗である必要がある。
+   * @param F 周波数スペクトル
+   * @returns 実部がwavのフレームデータ、虚部がほぼ0
+   */
+  ifft = (F: Array<Complex>): Array<Complex> => {
+    const result = this.fftin(F, this.itwiddle).map(
+      (c) => new Complex(c.re / this.size, c.sub / this.size)
+    );
+    return result;
+  };
+}

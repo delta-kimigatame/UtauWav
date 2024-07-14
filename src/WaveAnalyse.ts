@@ -3,7 +3,7 @@
  */
 
 import Complex from "./Complex";
-import { fft, ifft } from "./lib/fft";
+import { FFT } from "./lib/fft";
 
 export default class WaveAnalyse {
   constructor() {}
@@ -64,6 +64,7 @@ export default class WaveAnalyse {
     const spectrogram: Array<Array<Complex>> = new Array();
     const preEmphasisdData: Array<number> = this.PreEmphasis(data, preEmphasis);
     const window: Array<number> = this.MakeWindow(windowType, windowSize);
+    const f=new FFT(fftSize)
     for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
       const targetFrames = preEmphasisdData.slice(i, i + fftSize);
       const complexValue: Array<Complex> = new Array();
@@ -72,7 +73,7 @@ export default class WaveAnalyse {
           new Complex(targetFrames[j] * window[j % windowSize])
         );
       }
-      spectrogram.push(fft(complexValue));
+      spectrogram.push(f.fft(complexValue));
     }
     const logSpectrogram: Array<Array<number>> = new Array();
     spectrogram.forEach((s1) => {
@@ -149,6 +150,8 @@ export default class WaveAnalyse {
     const T0_floor = Math.ceil(sampleRate / f0_floor);
     /** fftした際の最高周波数に相当するインデックス */
     const T0_ceil = Math.floor(sampleRate / f0_ceil);
+    /** fft高速化用クラス */
+    const f=new FFT(fftSize)
     data.forEach((v) => {
       complexValue.push(new Complex(v, 0));
     });
@@ -159,21 +162,21 @@ export default class WaveAnalyse {
     }
     for (
       let i = halfFftSize;
-      // i < complexValue.length - halfFftSize;
-      i < 1+halfFftSize;
+      i < complexValue.length - halfFftSize;
+      // i < 1+halfFftSize;
       i += stepSize
     ) {
       /** 当該indexの範囲のデータ */
       const targetFrames = complexValue.slice(i - halfFftSize, i + halfFftSize);
       /** fftしたデータ */
-      const spec = fft(targetFrames);
+      const spec = f.fft(targetFrames);
       /** fft結果のパワー */
       const power: Array<Complex> = new Array();
       spec.forEach((s) => {
         power.push(new Complex(s.re ** 2 + s.sub ** 2, 0));
       });
       /** iFFTした結果 */
-      const autocorrelation_ = ifft(power);
+      const autocorrelation_ = f.ifft(power);
       /** 最高周波数～最低周波数の間のiFFT結果の実部を1で正規化したもの */
       const autocorrelation: Array<number> = new Array();
       autocorrelation_.slice(0, fftSize / 2).forEach((a, i) => {
