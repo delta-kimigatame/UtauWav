@@ -40,4 +40,16 @@ export default class WaveAnalyse {
      * @returns 窓関数
      */
     MakeWindow(type: string, size: number): Array<number>;
+    /**
+     * 基本周波数を求める。
+     * @param data 1で正規化されたwavのデータ
+     * @param sampleRate wavのサンプリング周波数。default,44100
+     * @param fftSize fftのフレーム数、2のべき乗である必要がある。default,9048
+     * @param stepSize f0を求めるフレームの範囲
+     * @param f0_floor 最低周波数
+     * @param f0_ceil 最大周波数
+     * @param threshold 推定値が有意かどうか判定する閾値
+     * @returns `threshold`以上の有意な推定値が得られれば周波数、それ以外の場合0のArray
+     */
+    F0(data: Array<number>, sampleRate?: number, fftSize?: number, stepSize?: number, f0_floor?: number, f0_ceil?: number, threshold?: number): Array<number>;
 }
