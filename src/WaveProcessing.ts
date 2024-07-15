@@ -13,17 +13,9 @@ export default class WaveProcessing {
    * @returns DCオフセット除去後のwaveのデータ部
    */
   RemoveDCOffset(data: Array<number>): Array<number> {
-    const frames = data.length;
-    let total: number = 0;
-    data.forEach((d) => {
-      total = total + d;
-    });
-    const mean: number = total / frames;
-    const newData: Array<number> = new Array();
-    data.forEach((d) => {
-      newData.push(Math.round(d - mean));
-    });
-    return newData;
+    const total = data.reduce((prev, current) => prev + current, 0);
+    const mean: number = total / data.length;
+    return data.map((d) => Math.round(d - mean));
   }
 
   /**
@@ -33,17 +25,13 @@ export default class WaveProcessing {
    * @returns 絶対値の最大値が 2 ** (bitDepth-1) -1となるwavデータ
    */
   VolumeNormalize(data: Array<number>, bitDepth: number): Array<number> {
-    const newData: Array<number> = new Array();
-    let maxValue = 0;
-    data.forEach((d: number) => {
-      if (Math.abs(d) > maxValue) {
-        maxValue = Math.abs(d);
-      }
-    });
-    data.forEach((d: number) => {
-      newData.push(Math.round((d / maxValue) * (2 ** (bitDepth - 1) - 1)));
-    });
-    return newData;
+    const maxValue = data.reduce(
+      (prev, current) => Math.max(prev, Math.abs(current)),
+      0
+    );
+    return data.map((d) =>
+      Math.round((d / maxValue) * (2 ** (bitDepth - 1) - 1))
+    );
   }
 
   /**
@@ -55,11 +43,7 @@ export default class WaveProcessing {
    * @returns 理論上の最大値が1となるwaveデータ
    */
   LogicalNormalize(data: Array<number>, bitDepth: number): Array<number> {
-    const newData: Array<number> = new Array();
-    data.forEach((d: number) => {
-      newData.push(d / 2 ** (bitDepth - 1));
-    });
-    return newData;
+    return data.map((d) => d / 2 ** (bitDepth - 1));
   }
 
   /**
@@ -72,10 +56,6 @@ export default class WaveProcessing {
     data: Array<number>,
     bitDepth: number
   ): Array<number> {
-    const newData: Array<number> = new Array();
-    data.forEach((d: number) => {
-      newData.push(Math.round(d * 2 ** (bitDepth - 1)));
-    });
-    return newData;
+    return data.map((d) => Math.round(d * 2 ** (bitDepth - 1)));
   }
 }
