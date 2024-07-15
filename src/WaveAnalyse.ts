@@ -32,12 +32,9 @@ export default class WaveAnalyse {
     const windowFrames = windowSec * sampleRate;
     const window: Array<number> = this.MakeWindow(windowType, windowFrames);
     for (let i = 0; i < preEmphasisdData.length; i += windowFrames) {
-      let total = 0;
       const targetFrames = preEmphasisdData.slice(i, i + rangeFrames);
-      for (let j = 0; j < targetFrames.length; j++) {
-        const tmp = targetFrames[j] * window[j % windowFrames];
-        total = total + tmp ** 2;
-      }
+      const tmp = targetFrames.map((t, i) => t * window[i % windowFrames]);
+      const total = tmp.reduce((prev, current) => prev + current ** 2, 0);
       power.push(10 * Math.log10(total / targetFrames.length));
     }
     return power;
@@ -66,24 +63,14 @@ export default class WaveAnalyse {
     const window: Array<number> = this.MakeWindow(windowType, windowSize);
     const f = new FFT(fftSize);
     for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
-      const targetFrames = preEmphasisdData.slice(i, i + fftSize);
-      const complexValue: Array<Complex> = new Array();
-      for (let j = 0; j < targetFrames.length; j++) {
-        complexValue.push(
-          new Complex(targetFrames[j] * window[j % windowSize])
-        );
-      }
-      spectrogram.push(f.fft(complexValue));
+      const windowdData: Array<number> = preEmphasisdData
+        .slice(i, i + fftSize)
+        .map((t, i) => t * window[i % windowSize]);
+      spectrogram.push(f.fftReal(windowdData));
     }
-    const logSpectrogram: Array<Array<number>> = new Array();
-    spectrogram.forEach((s1) => {
-      const s: Array<number> = new Array();
-      s1.forEach((s2) => {
-        s.push(10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5));
-      });
-      logSpectrogram.push(s);
-    });
-
+    const logSpectrogram: Array<Array<number>> = spectrogram.map((s1) =>
+      s1.map((s2) => 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5))
+    );
     return logSpectrogram;
   }
 
@@ -94,14 +81,7 @@ export default class WaveAnalyse {
    * @returns プリエンファシスフィルタ適用済みのwavデータ
    */
   PreEmphasis(data: Array<number>, p: number = 0.97): Array<number> {
-    const newData: Array<number> = new Array();
-
-    newData.push(data[0]);
-    for (let i = 1; i < data.length; i++) {
-      newData.push(data[i] - p * data[i - 1]);
-    }
-
-    return newData;
+    return data.map((_, i) => (i === 0 ? data[0] : data[i] - p * data[i - 1]));
   }
 
   /**
@@ -148,20 +128,21 @@ export default class WaveAnalyse {
     const T0_floor = Math.ceil(sampleRate / f0_floor);
     /** fftした際の最高周波数に相当するインデックス */
     const T0_ceil = Math.floor(sampleRate / f0_ceil);
+    /** fftsizeの半分。複数回計算するため事前に算出しておく */
     const halfFftSize: number = Math.floor(fftSize / 2);
+    /** padding用の配列、2回使用するため事前に代入しておく。 */
     const padding: Array<number> = new Array<number>(halfFftSize).fill(0);
     /** fft高速化用クラス */
     const f = new FFT(fftSize);
-    /** fftに渡すためにwavのデータを複素数にしたもの */
-    const complexValue: Array<number> = padding.concat(data, padding);
+    /** fftに渡すためにwavのデータの前後にfftsizeに応じた0埋めをしたもの */
+    const paddingData: Array<number> = padding.concat(data, padding);
     for (
       let i = halfFftSize;
-      i < complexValue.length - halfFftSize;
-      // i < 1+halfFftSize;
+      i < paddingData.length - halfFftSize;
       i += stepSize
     ) {
       /** 当該indexの範囲のデータ */
-      const targetFrames = complexValue.slice(i - halfFftSize, i + halfFftSize);
+      const targetFrames = paddingData.slice(i - halfFftSize, i + halfFftSize);
       /** fftしたデータ */
       const spec = f.fftReal(targetFrames);
       /** fft結果のパワー */
@@ -171,9 +152,7 @@ export default class WaveAnalyse {
       /** 最高周波数～最低周波数の間のiFFT結果の実部を1で正規化したもの */
       const autocorrelation = autocorrelation_
         .slice(0, Math.min(halfFftSize, T0_floor))
-        .map((a, i) =>
-          i < T0_ceil ? 0 : a / autocorrelation_[0]
-        );
+        .map((a, i) => (i < T0_ceil ? 0 : a / autocorrelation_[0]));
       /** ピーク値 */
       const max = autocorrelation.reduce(aryMax);
       /** ピーク値のindex */
