@@ -64,7 +64,7 @@ export default class WaveAnalyse {
     const spectrogram: Array<Array<Complex>> = new Array();
     const preEmphasisdData: Array<number> = this.PreEmphasis(data, preEmphasis);
     const window: Array<number> = this.MakeWindow(windowType, windowSize);
-    const f=new FFT(fftSize)
+    const f = new FFT(fftSize);
     for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
       const targetFrames = preEmphasisdData.slice(i, i + fftSize);
       const complexValue: Array<Complex> = new Array();
@@ -144,22 +144,19 @@ export default class WaveAnalyse {
     threshold: number = 0.2
   ): Array<number> {
     const f0: Array<number> = new Array();
-    /** fftに渡すためにwavのデータを複素数にしたもの */
-    const complexValue: Array<Complex> = new Array();
     /** fftした際の最低周波数に相当するインデックス */
     const T0_floor = Math.ceil(sampleRate / f0_floor);
     /** fftした際の最高周波数に相当するインデックス */
     const T0_ceil = Math.floor(sampleRate / f0_ceil);
-    /** fft高速化用クラス */
-    const f=new FFT(fftSize)
-    data.forEach((v) => {
-      complexValue.push(new Complex(v, 0));
-    });
     const halfFftSize: number = Math.floor(fftSize / 2);
-    for (let i = 0; i < halfFftSize; i++) {
-      complexValue.unshift(new Complex(0, 0));
-      complexValue.push(new Complex(0, 0));
-    }
+    const padding: Array<Complex> = new Array<Complex>(halfFftSize).fill(new Complex(0,0))
+    /** fft高速化用クラス */
+    const f = new FFT(fftSize);
+    /** fftに渡すためにwavのデータを複素数にしたもの */
+    const complexValue: Array<Complex> = padding.concat(
+      data.map((v) => new Complex(v, 0)),
+      padding
+    );
     for (
       let i = halfFftSize;
       i < complexValue.length - halfFftSize;
@@ -171,30 +168,20 @@ export default class WaveAnalyse {
       /** fftしたデータ */
       const spec = f.fft(targetFrames);
       /** fft結果のパワー */
-      const power: Array<Complex> = new Array();
-      spec.forEach((s) => {
-        power.push(new Complex(s.re ** 2 + s.sub ** 2, 0));
-      });
+      const power = spec.map((s) => new Complex(s.re ** 2 + s.sub ** 2, 0));
       /** iFFTした結果 */
       const autocorrelation_ = f.ifft(power);
       /** 最高周波数～最低周波数の間のiFFT結果の実部を1で正規化したもの */
-      const autocorrelation: Array<number> = new Array();
-      autocorrelation_.slice(0, fftSize / 2).forEach((a, i) => {
-        if (i < T0_ceil || i > T0_floor) {
-          autocorrelation.push(0);
-        } else {
-          autocorrelation.push(a.re / autocorrelation_[0].re);
-        }
-      });
+      const autocorrelation = autocorrelation_
+        .slice(0, fftSize / 2)
+        .map((a, i) =>
+          i < T0_ceil || i > T0_floor ? 0 : a.re / autocorrelation_[0].re
+        );
       /** ピーク値 */
       const max = autocorrelation.reduce(aryMax);
       /** ピーク値のindex */
       const maxIndex = autocorrelation.indexOf(max);
-      if (max >= threshold) {
-        f0.push(sampleRate/maxIndex);
-      } else {
-        f0.push(0);
-      }
+      f0.push(max >= threshold ? sampleRate / maxIndex : 0);
     }
     return f0;
   }

@@ -81,14 +81,10 @@ export class FFT {
   constructor(size: number) {
     this.size = size;
     this.k = Math.log2(this.size);
-    this.twiddle = new Array();
-    this.itwiddle = new Array();
     const T = (-2 * Math.PI) / this.size;
     const iT = (2 * Math.PI) / this.size;
-    for (let i = 0; i < this.size; i++) {
-      this.twiddle.push(new Complex().Expi(T * i));
-      this.itwiddle.push(new Complex().Expi(iT * i));
-    }
+    this.twiddle = [...new Array(this.size)].map((_,i)=>(new Complex().Expi(T * i)))
+    this.itwiddle = [...new Array(this.size)].map((_,i)=>(new Complex().Expi(iT * i)))
   }
 
   /**
