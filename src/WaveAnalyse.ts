@@ -151,13 +151,45 @@ export default class WaveAnalyse {
       const autocorrelation_ = f.ifftRealtoReal(power);
       /** 最高周波数～最低周波数の間のiFFT結果の実部を1で正規化したもの */
       const autocorrelation = autocorrelation_
-        .slice(0, Math.min(halfFftSize, T0_floor))
-        .map((a, i) => (i < T0_ceil ? 0 : a / autocorrelation_[0]));
+        .slice(0, halfFftSize)
+        .map((a) => a / autocorrelation_[0]);
       /** ピーク値 */
-      const max = autocorrelation.reduce(aryMax);
+      const max = autocorrelation.slice(T0_ceil, T0_floor).reduce(aryMax);
       /** ピーク値のindex */
-      const maxIndex = autocorrelation.indexOf(max);
-      f0.push(max >= threshold ? sampleRate / maxIndex : 0);
+      const maxIndex =
+        autocorrelation.slice(T0_ceil, T0_floor).indexOf(max) + T0_ceil;
+      if (max >= threshold) {/** maxが有意の場合倍音を用いて補正する。 */
+        /** 倍音を用いて補正したindex */
+        let nMaxIndex = maxIndex;
+        for (let N = 2; N < Math.floor(halfFftSize / maxIndex) - 1; N++) {
+          /** 現在のnMaxIndexから推定される、N倍音のインデックス */
+          const nIndexCenter = Math.floor(nMaxIndex * N);
+          if (nIndexCenter + 10 >= halfFftSize || nIndexCenter - 10 < 0) {
+            break;
+          }
+          /** N倍音の最大値 */
+          const nmax = autocorrelation
+            .slice(nIndexCenter - 10, nIndexCenter + 10)
+            .reduce(aryMax);
+          /** N倍音のインデックス */
+          const nn =
+            autocorrelation
+              .slice(nIndexCenter - 10, nIndexCenter + 10)
+              .indexOf(nmax) +
+            nIndexCenter -
+            10;
+          nMaxIndex = nn / N;
+        }
+        /** 倍音補正で求めた基準周波数 */
+        const f0_ = sampleRate / nMaxIndex;
+        if (f0_ >= f0_floor && f0_ <= f0_ceil) {/** 基準周波数が閾値の範囲内か? */
+          f0.push(f0_);
+        } else {
+          f0.push(f0_floor);
+        }
+      } else {
+        f0.push(f0_floor);
+      }
     }
     return f0;
   }
