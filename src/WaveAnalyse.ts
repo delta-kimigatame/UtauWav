@@ -149,14 +149,11 @@ export default class WaveAnalyse {
     /** fftした際の最高周波数に相当するインデックス */
     const T0_ceil = Math.floor(sampleRate / f0_ceil);
     const halfFftSize: number = Math.floor(fftSize / 2);
-    const padding: Array<Complex> = new Array<Complex>(halfFftSize).fill(new Complex(0,0))
+    const padding: Array<number> = new Array<number>(halfFftSize).fill(0);
     /** fft高速化用クラス */
     const f = new FFT(fftSize);
     /** fftに渡すためにwavのデータを複素数にしたもの */
-    const complexValue: Array<Complex> = padding.concat(
-      data.map((v) => new Complex(v, 0)),
-      padding
-    );
+    const complexValue: Array<number> = padding.concat(data, padding);
     for (
       let i = halfFftSize;
       i < complexValue.length - halfFftSize;
@@ -166,16 +163,16 @@ export default class WaveAnalyse {
       /** 当該indexの範囲のデータ */
       const targetFrames = complexValue.slice(i - halfFftSize, i + halfFftSize);
       /** fftしたデータ */
-      const spec = f.fft(targetFrames);
+      const spec = f.fftReal(targetFrames);
       /** fft結果のパワー */
-      const power = spec.map((s) => new Complex(s.re ** 2 + s.sub ** 2, 0));
+      const power = spec.map((s) => s.re ** 2 + s.sub ** 2);
       /** iFFTした結果 */
-      const autocorrelation_ = f.ifft(power);
+      const autocorrelation_ = f.ifftRealtoReal(power);
       /** 最高周波数～最低周波数の間のiFFT結果の実部を1で正規化したもの */
       const autocorrelation = autocorrelation_
-        .slice(0, fftSize / 2)
+        .slice(0, Math.min(halfFftSize, T0_floor))
         .map((a, i) =>
-          i < T0_ceil || i > T0_floor ? 0 : a.re / autocorrelation_[0].re
+          i < T0_ceil ? 0 : a / autocorrelation_[0]
         );
       /** ピーク値 */
       const max = autocorrelation.reduce(aryMax);

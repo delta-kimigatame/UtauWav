@@ -83,8 +83,12 @@ export class FFT {
     this.k = Math.log2(this.size);
     const T = (-2 * Math.PI) / this.size;
     const iT = (2 * Math.PI) / this.size;
-    this.twiddle = [...new Array(this.size)].map((_,i)=>(new Complex().Expi(T * i)))
-    this.itwiddle = [...new Array(this.size)].map((_,i)=>(new Complex().Expi(iT * i)))
+    this.twiddle = [...new Array(this.size)].map((_, i) =>
+      new Complex().Expi(T * i)
+    );
+    this.itwiddle = [...new Array(this.size)].map((_, i) =>
+      new Complex().Expi(iT * i)
+    );
   }
 
   /**
@@ -126,6 +130,61 @@ export class FFT {
   ifft = (F: Array<Complex>): Array<Complex> => {
     const result = this.fftin(F, this.itwiddle).map(
       (c) => new Complex(c.re / this.size, c.sub / this.size)
+    );
+    return result;
+  };
+
+  /**
+   * FFTとiFFTの共通処理部分。変換元データを実数にする
+   * @param c 変換元データ
+   * @param twiddle 回転因子
+   * @returns
+   */
+  fftinReal = (c: Array<number>, twiddle: Array<Complex>): Array<Complex> => {
+    const rec: Array<Complex> = c.map(
+      (_, i: number) => new Complex(c[revBit(this.k, i)])
+    );
+    let T = this.size;
+    for (let Nh = 1; Nh < this.size; Nh *= 2) {
+      T /= 2;
+      for (let s = 0; s < this.size; s += Nh * 2) {
+        for (let i = 0; i < Nh; i++) {
+          const l = rec[s + i];
+          const re = rec[s + i + Nh].Mul(twiddle[T * i]);
+          [rec[s + i], rec[s + i + Nh]] = [l.Add(re), l.Sub(re)];
+        }
+      }
+    }
+    return rec;
+  };
+  /**
+   * 高速フーリエ変換、f.lengthが2のべき乗である必要がある。
+   * @param f 実部がwavのフレームデータ、虚部が0の複素数
+   * @returns 周波数スペクトル
+   */
+  fftReal = (f: Array<number>): Array<Complex> => {
+    return this.fftinReal(f, this.twiddle);
+  };
+
+  /**
+   * 逆高速フーリエ変換、F.lengthが2のべき乗である必要がある。
+   * @param F 周波数スペクトル
+   * @returns 実部がwavのフレームデータ、虚部がほぼ0
+   */
+  ifftReal = (F: Array<number>): Array<Complex> => {
+    const result = this.fftinReal(F, this.itwiddle).map(
+      (c) => new Complex(c.re / this.size, c.sub / this.size)
+    );
+    return result;
+  };
+  /**
+   * 逆高速フーリエ変換、F.lengthが2のべき乗である必要がある。
+   * @param F 周波数スペクトル
+   * @returns 実部がwavのフレームデータ、虚部がほぼ0
+   */
+  ifftRealtoReal = (F: Array<number>): Array<number> => {
+    const result = this.fftinReal(F, this.itwiddle).map(
+      (c) => c.re / this.size
     );
     return result;
   };
