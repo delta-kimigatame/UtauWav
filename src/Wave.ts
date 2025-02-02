@@ -359,7 +359,7 @@ export default class Wave {
     const newDataChunkSize: number = this.blockSize * data.length;
     this.header.chunksize =
       this.header.chunksize - this.header.dataChunkSize + newDataChunkSize;
-    this.header.dataChunkSize = this.blockSize * newDataChunkSize;
+    this.header.dataChunkSize = newDataChunkSize;
   }
 }
 
