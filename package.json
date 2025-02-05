@@ -1,7 +1,7 @@
 {
   "name": "utauwav",
-  "version": "0.5.0",
-  "main": "./dist/index.js",
+  "version": "0.6.0",
+  "main": "./dist/utauwav.es.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
