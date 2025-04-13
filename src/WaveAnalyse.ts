@@ -68,8 +68,9 @@ export default class WaveAnalyse {
         .map((t, i) => t * window[i % windowSize]);
       spectrogram.push(f.fftReal(windowdData));
     }
+    /** 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5と5 * Math.log10((s2.re ** 2 + s2.sub ** 2))は数学的に等価 */
     const logSpectrogram: Array<Array<number>> = spectrogram.map((s1) =>
-      s1.map((s2) => 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5))
+      s1.map((s2) => 5 * Math.log10((s2.re *s2.re + s2.sub *s2.sub)))
     );
     return logSpectrogram;
   }

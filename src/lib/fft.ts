@@ -78,6 +78,9 @@ export class FFT {
   /** ifft用の回転因子。fftsizeに依存する複素数の列 */
   itwiddle: Array<Complex>;
 
+  /** ビット逆転用のインデックス */
+  revIndices: Array<number>;
+
   constructor(size: number) {
     this.size = size;
     this.k = Math.log2(this.size);
@@ -89,6 +92,10 @@ export class FFT {
     this.itwiddle = [...new Array(this.size)].map((_, i) =>
       new Complex().Expi(iT * i)
     );
+    this.revIndices = new Array(this.size);
+    for (let i = 0; i < this.size; i++) {
+      this.revIndices[i] = revBit(this.k, i);
+    }
   }
 
   /**
@@ -98,7 +105,10 @@ export class FFT {
    * @returns
    */
   fftin = (c: Array<Complex>, twiddle: Array<Complex>): Array<Complex> => {
-    const rec: Array<Complex> = c.map((_, i: number) => c[revBit(this.k, i)]);
+    const rec: Array<Complex> = new Array(this.size);
+    for (let i = 0; i < this.size; i++) {
+      rec[i] = c[this.revIndices[i]];
+    }
     let T = this.size;
     for (let Nh = 1; Nh < this.size; Nh *= 2) {
       T /= 2;
@@ -141,9 +151,10 @@ export class FFT {
    * @returns
    */
   fftinReal = (c: Array<number>, twiddle: Array<Complex>): Array<Complex> => {
-    const rec: Array<Complex> = c.map(
-      (_, i: number) => new Complex(c[revBit(this.k, i)])
-    );
+    const rec: Array<Complex> = new Array(this.size);
+    for (let i = 0; i < this.size; i++) {
+      rec[i] = new Complex(c[this.revIndices[i]]);
+    }
     let T = this.size;
     for (let Nh = 1; Nh < this.size; Nh *= 2) {
       T /= 2;
