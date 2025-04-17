@@ -1,7 +1,8 @@
+import { describe, expect, it } from "vitest";
 import WaveProcessing from "../src/WaveProcessing";
 
 describe("WaveProcessingのテスト", () => {
-  test("RemoveDCOffset", () => {
+  it("RemoveDCOffset", () => {
     const wp = new WaveProcessing();
 
     expect(wp.RemoveDCOffset([0, 5, -5, 3, -3, 0])).toEqual([
@@ -17,7 +18,7 @@ describe("WaveProcessingのテスト", () => {
       1, 5, -5, 4, -3, 1,
     ]); // 平均が1.5
   });
-  test("VolumeNormalize", () => {
+  it("VolumeNormalize", () => {
     const wp = new WaveProcessing();
 
     expect(wp.VolumeNormalize([0, 4, -5, 3, -3, 0], 8)).toEqual([
@@ -27,7 +28,7 @@ describe("WaveProcessingのテスト", () => {
       0, 26214, -32767, 19660, -19660, 0,
     ]);
   });
-  test("LogicalNormalize", () => {
+  it("LogicalNormalize", () => {
     const wp = new WaveProcessing();
 
     expect(wp.LogicalNormalize([0, 4, -5, 3, -3, 0], 8)).toEqual([
@@ -38,7 +39,7 @@ describe("WaveProcessingのテスト", () => {
       -0.000091552734375, 0,
     ]);
   });
-  test("InverseLogicalNormalize", () => {
+  it("InverseLogicalNormalize", () => {
     const wp = new WaveProcessing();
 
     expect(

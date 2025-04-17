@@ -1,9 +1,10 @@
+import { describe, expect,it } from "vitest";
 import Wave from "../src/Wave";
 import WaveAnalyse from "../src/WaveAnalyse";
 import fs from "fs";
 
 describe("WaveAnalyseのテスト", () => {
-  test("PreEmphasis", () => {
+  it("PreEmphasis", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.PreEmphasis([0.1, 0.2, 0.3, 0.4, 0.5]);
     const answer1 = new Array(0.1, 0.103, 0.106, 0.109, 0.112);
@@ -17,11 +18,11 @@ describe("WaveAnalyseのテスト", () => {
     }
   });
 
-  test("makeWindow_none", () => {
+  it("makeWindow_none", () => {
     const wa = new WaveAnalyse();
     expect(wa.MakeWindow("a", 10)).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
   });
-  test("makeWindow_hanning", () => {
+  it("makeWindow_hanning", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.MakeWindow("hanning", 10);
     const answer1 = new Array(
@@ -40,7 +41,7 @@ describe("WaveAnalyseのテスト", () => {
       expect(result1[i]).toBeCloseTo(answer1[i]);
     }
   });
-  test("makeWindow_hamming", () => {
+  it("makeWindow_hamming", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.MakeWindow("hamming", 10);
     const answer1 = new Array(
@@ -59,7 +60,7 @@ describe("WaveAnalyseのテスト", () => {
       expect(result1[i]).toBeCloseTo(answer1[i]);
     }
   });
-  test("power", () => {
+  it("power", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.Power(
       [0.1, -0.2, 0.3, -0.4, 0.5, -0.6, 0.7, -0.8, 0.9, -1],
@@ -85,7 +86,7 @@ describe("WaveAnalyseのテスト", () => {
       expect(result1[i]).toBeCloseTo(answer1[i]);
     }
   });
-  test("power_pre", () => {
+  it("power_pre", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.Power(
       [0.1, -0.2, 0.3, -0.4, 0.5, -0.6, 0.7, -0.8, 0.9, -1],
@@ -110,7 +111,7 @@ describe("WaveAnalyseのテスト", () => {
       expect(result1[i]).toBeCloseTo(answer1[i]);
     }
   });
-  test("power_pre_hanning", () => {
+  it("power_pre_hanning", () => {
     const wa = new WaveAnalyse();
     const result1 = wa.Power(
       [0.1, -0.2, 0.3, -0.4, 0.5, -0.6, 0.7, -0.8, 0.9, -1],
@@ -135,7 +136,7 @@ describe("WaveAnalyseのテスト", () => {
       expect(result1[i]).toBeCloseTo(answer1[i]);
     }
   });
-  test("f0_8192", () => {
+  it("f0_8192", () => {
     const wa = new WaveAnalyse();
     const buffer = fs.readFileSync(
       "./__tests__/test_data/error_test_dcoffset_20240623.wav"

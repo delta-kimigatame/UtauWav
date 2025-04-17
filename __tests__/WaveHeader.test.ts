@@ -1,7 +1,8 @@
+import { describe, expect, it } from "vitest";
 import WaveHeader from "../src/WaveHeader";
 
 describe("WaveHeaderのテスト", () => {
-  test("length_check", () => {
+  it("length_check", () => {
     // 43Byteの欠損waveヘッダ
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -14,7 +15,7 @@ describe("WaveHeaderのテスト", () => {
       "waveヘッダに欠損があるか、waveファイルではありません。"
     );
   });
-  test("riff_check", () => {
+  it("riff_check", () => {
     //44Byte以上あり、頭がRiffでないwave
     const errorData = new Uint8Array([
       0x51, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -26,7 +27,7 @@ describe("WaveHeaderのテスト", () => {
       "このデータはwaveファイルではありません。RIFF識別子がありません。"
     );
   });
-  test("wave_check", () => {
+  it("wave_check", () => {
     //44Byte以上あり、wave識別子が無いwave
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x56, 0x41, 0x56, 0x45,
@@ -38,7 +39,7 @@ describe("WaveHeaderのテスト", () => {
       "このデータはwaveファイルではありません。WAVE識別子がありません。"
     );
   });
-  test("fmt_check", () => {
+  it("fmt_check", () => {
     //44Byte以上あり、fmt識別子が無いwave
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -50,7 +51,7 @@ describe("WaveHeaderのテスト", () => {
       "このデータはwaveファイルではありません。fmt 識別子がありません。"
     );
   });
-  test("length_check_fmt_shift", () => {
+  it("length_check_fmt_shift", () => {
     // 44Byteあるが、WAVEとfmtの間にジャンクがあり、欠損のあるwaveヘッダ
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -63,7 +64,7 @@ describe("WaveHeaderのテスト", () => {
       "waveヘッダに欠損があります。"
     );
   });
-  test("length_check_data_shift", () => {
+  it("length_check_data_shift", () => {
     // 44Byteあるが、WAVEとfmtの間にジャンクがあり、欠損のあるwaveヘッダ
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -76,7 +77,7 @@ describe("WaveHeaderのテスト", () => {
       "waveヘッダに欠損があります。"
     );
   });
-  test("read_header", () => {
+  it("read_header", () => {
     // 44Byteの正常waveヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -96,7 +97,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.dataChunkSize).toBe(516096);
     expect(whd.dataIndex).toBe(44);
   });
-  test("read_header_shift_fmt", () => {
+  it("read_header_shift_fmt", () => {
     // WAVEとfmtの間に3バイトのジャンクが入った47バイトのヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -116,7 +117,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.dataChunkSize).toBe(516096);
     expect(whd.dataIndex).toBe(47);
   });
-  test("read_header_shift_data", () => {
+  it("read_header_shift_data", () => {
     // fmtとdataの間に3バイトのジャンクが入った47バイトのヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -136,7 +137,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.dataChunkSize).toBe(516096);
     expect(whd.dataIndex).toBe(47);
   });
-  test("read_header_a-law", () => {
+  it("read_header_a-law", () => {
     // 44Byteの正常waveヘッダ,a-law
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -148,7 +149,7 @@ describe("WaveHeaderのテスト", () => {
       "このwavファイルはA-lawコーデックで圧縮されており、読み込みできません。"
     );
   });
-  test("read_header_u-law", () => {
+  it("read_header_u-law", () => {
     // 44Byteの正常waveヘッダ,u-law
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -160,7 +161,7 @@ describe("WaveHeaderのテスト", () => {
       "このwavファイルはu-lawコーデックで圧縮されており、読み込みできません。"
     );
   });
-  test("read_header_unknown", () => {
+  it("read_header_unknown", () => {
     // 44Byteの正常waveヘッダ,unknown
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -172,7 +173,7 @@ describe("WaveHeaderのテスト", () => {
       "このwavファイルは未知のコーデックで圧縮されており、読み込みできません。"
     );
   });
-  test("read_header_unknown", () => {
+  it("read_header_unknown", () => {
     // 44Byteの正常waveヘッダ,32bit float
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -184,7 +185,7 @@ describe("WaveHeaderのテスト", () => {
       "このwavファイルは32bit floatで記録されており、読み込みできません。"
     );
   });
-  test("data_check", () => {
+  it("data_check", () => {
     //44Byte以上あり、data識別子が無いwave
     const errorData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -196,7 +197,7 @@ describe("WaveHeaderのテスト", () => {
       "このデータはwaveファイルではありません。data識別子がありません。"
     );
   });
-  test("set_param", () => {
+  it("set_param", () => {
     // 44Byteの正常waveヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -231,7 +232,7 @@ describe("WaveHeaderのテスト", () => {
     expect(whd.bitDepth).toBe(6);
     expect(whd.dataChunkSize).toBe(7);
   });
-  test("output_header", () => {
+  it("output_header", () => {
     // 44Byteの正常waveヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -242,7 +243,7 @@ describe("WaveHeaderのテスト", () => {
     const whd = new WaveHeader(safeData.buffer);
     expect(whd.Output()).toEqual(safeData.buffer);
   });
-  test("input_junk_output_header", () => {
+  it("input_junk_output_header", () => {
     // fmtの前に3Byteのジャンクがある47Byteの正常waveヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -253,7 +254,7 @@ describe("WaveHeaderのテスト", () => {
     const whd = new WaveHeader(safeData.buffer);
     expect(whd.Output()).toEqual(safeData.buffer);
   });
-  test("output_header_changes", () => {
+  it("output_header_changes", () => {
     // 44Byteの正常waveヘッダ
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,

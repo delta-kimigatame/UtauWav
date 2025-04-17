@@ -1,9 +1,10 @@
+import { describe, expect, it } from "vitest";
 import Wave from "../src/Wave";
 import { GenerateWave } from "../src/Wave";
 import fs from "fs";
 
 describe("Waveのテスト", () => {
-  test("read_only_header", () => {
+  it("read_only_header", () => {
     // 44Byteの正常waveヘッダ、データ部無し
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -21,7 +22,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toBe(null);
     expect(wave.rData).toBe(null);
   });
-  test("read_only_header", () => {
+  it("read_only_header", () => {
     // 44Byteの正常waveヘッダ、欠損データ有
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -39,7 +40,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toBe(null);
     expect(wave.rData).toBe(null);
   });
-  test("read_8bit_mono", () => {
+  it("read_8bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth8、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -57,7 +58,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toBe(null);
   });
-  test("read_8bit_stereo", () => {
+  it("read_8bit_stereo", () => {
     // 44Byteの正常waveヘッダ、bitDepth8、2ch、2frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -75,7 +76,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, -1]);
     expect(wave.rData).toEqual([1, 3]);
   });
-  test("read_16bit_mono", () => {
+  it("read_16bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth16、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -94,7 +95,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toBe(null);
   });
-  test("read_16bit_stereo", () => {
+  it("read_16bit_stereo", () => {
     // 44Byteの正常waveヘッダ、bitDepth16、2ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -113,7 +114,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, -1]);
     expect(wave.rData).toEqual([1, 3]);
   });
-  test("read_24bit_mono", () => {
+  it("read_24bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth24、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -132,7 +133,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toBe(null);
   });
-  test("setChannels", () => {
+  it("setChannels", () => {
     // 44Byteの正常waveヘッダ、bitDepth16、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -160,7 +161,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toBe(null);
   });
-  test("setBitDepth", () => {
+  it("setBitDepth", () => {
     // 44Byteの正常waveヘッダ、bitDepth16、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -201,7 +202,7 @@ describe("Waveのテスト", () => {
     expect(wave.bytePerSec).toBe(88200);
   });
 
-  test("setSampleRateMonoJust", () => {
+  it("setSampleRateMonoJust", () => {
     const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -215,7 +216,7 @@ describe("Waveのテスト", () => {
     expect(wav.sampleRate).toBe(8000);
     expect(wav.data?.slice(0, 4)).toEqual([1, 15, 27, 40]);
   });
-  test("setSampleRateStereoJust", () => {
+  it("setSampleRaitereoJust", () => {
     const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -231,7 +232,7 @@ describe("Waveのテスト", () => {
     expect(wav.data?.slice(0, 4)).toEqual([1, 15, 27, 40]);
     expect(wav.rData?.slice(0, 4)).toEqual([1, 15, 27, 40]);
   });
-  test("setSampleRateMonoNotJust", () => {
+  it("setSampleRateMonoNotJust", () => {
     const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_44100_16.wav");
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -245,7 +246,7 @@ describe("Waveのテスト", () => {
     expect(wav.sampleRate).toBe(8000);
     expect(wav.data?.slice(0, 4)).toEqual([1, 13, 24, 39]);
   });
-  test("setSampleRateMonoAdd", () => {
+  it("setSampleRateMonoAdd", () => {
     const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_48000_16.wav");
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -259,7 +260,7 @@ describe("Waveのテスト", () => {
     expect(wav.sampleRate).toBe(96000);
     expect(wav.data?.slice(0, 8)).toEqual([1, 1, 0, 4, 8, 6, 3, 7]);
   });
-  test("output_8bit_mono", () => {
+  it("output_8bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth8、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x28, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -278,7 +279,7 @@ describe("Waveのテスト", () => {
     expect(wave.rData).toBe(null);
     expect(wave.Output()).toEqual(safeData.buffer);
   });
-  test("output_8bit_stereo", () => {
+  it("output_8bit_stereo", () => {
     // 44Byteの正常waveヘッダ、bitDepth8、2ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x28, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -297,7 +298,7 @@ describe("Waveのテスト", () => {
     expect(wave.rData).toEqual([1, 3]);
     expect(wave.Output()).toEqual(safeData.buffer);
   });
-  test("output_16bit_mono", () => {
+  it("output_16bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth16、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x2c, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -328,7 +329,7 @@ describe("Waveのテスト", () => {
     expect(wave.blockSize).toBe(4);
     expect(wave.Output()).toEqual(safeData2.buffer);
   });
-  test("output_24bit_mono", () => {
+  it("output_24bit_mono", () => {
     // 44Byteの正常waveヘッダ、bitDepth24、1ch、4frame
     const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x30, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
@@ -360,7 +361,7 @@ describe("Waveのテスト", () => {
     expect(wave.blockSize).toBe(6);
     expect(wave.Output()).toEqual(safeData2.buffer);
   });
-  test("errordata_20240612", () => {
+  it("errordata_20240612", () => {
     const buffer = fs.readFileSync(
       "./__tests__/test_data/error_test_data_20240612.wav"
     );
@@ -375,7 +376,7 @@ describe("Waveのテスト", () => {
     wav.sampleRate = 44100;
     wav.Output();
   });
-  test("generate_test", () => {
+  it("generate_it", () => {
     const wave = GenerateWave(44100, 16, [0, 1, -1, 3]);
     expect(wave.chunksize).toBe(44);
     expect(wave.channels).toBe(1);
@@ -386,7 +387,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toBe(null);
   });
-  test("generate_test_stereo", () => {
+  it("generate_it_stereo", () => {
     const wave = GenerateWave(44100, 16, [0, 1, -1, 3], [0, 2, -2, 5]);
     expect(wave.chunksize).toBe(52);
     expect(wave.channels).toBe(2);
@@ -397,7 +398,7 @@ describe("Waveのテスト", () => {
     expect(wave.data).toEqual([0, 1, -1, 3]);
     expect(wave.rData).toEqual([0, 2, -2, 5]);
   });
-  test("RemoveDCOffset_errordata_20240623", () => {
+  it("RemoveDCOffset_errordata_20240623", () => {
     const buffer = fs.readFileSync(
       "./__tests__/test_data/error_test_dcoffset_20240623.wav"
     );
