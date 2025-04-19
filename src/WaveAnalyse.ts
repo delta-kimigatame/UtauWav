@@ -4,6 +4,7 @@
 
 import Complex from "./Complex";
 import { FFT } from "./lib/fft";
+import { calc_spectrogram } from "@delta-kimigatame/fft-wasm-lib";
 
 export default class WaveAnalyse {
   constructor() {}
@@ -27,10 +28,10 @@ export default class WaveAnalyse {
     preEmphasis: number = 0.97
   ): Array<number> {
     const power: Array<number> = new Array();
-    const preEmphasisdData: Array<number> = this.PreEmphasis(data, preEmphasis);
+    const preEmphasisdData = this.PreEmphasis(data, preEmphasis);
     const rangeFrames = rangeSec * sampleRate;
     const windowFrames = windowSec * sampleRate;
-    const window: Array<number> = this.MakeWindow(windowType, windowFrames);
+    const window = this.MakeWindow(windowType, windowFrames);
     for (let i = 0; i < preEmphasisdData.length; i += windowFrames) {
       const targetFrames = preEmphasisdData.slice(i, i + rangeFrames);
       const tmp = targetFrames.map((t, i) => t * window[i % windowFrames]);
@@ -59,30 +60,113 @@ export default class WaveAnalyse {
     preEmphasis: number = 0.97
   ): Array<Array<number>> {
     const spectrogram: Array<Array<Complex>> = new Array();
-    const preEmphasisdData: Array<number> = this.PreEmphasis(data, preEmphasis);
-    const window: Array<number> = this.MakeWindow(windowType, windowSize);
+    const preEmphasisdData: Float64Array = this.PreEmphasis(data, preEmphasis);
+    const window = this.MakeWindow(windowType, windowSize);
     const f = new FFT(fftSize);
     for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
-      const windowdData: Array<number> = preEmphasisdData
+      const windowdData = preEmphasisdData
         .slice(i, i + fftSize)
         .map((t, i) => t * window[i % windowSize]);
       spectrogram.push(f.fftReal(windowdData));
     }
     /** 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5と5 * Math.log10((s2.re ** 2 + s2.sub ** 2))は数学的に等価 */
     const logSpectrogram: Array<Array<number>> = spectrogram.map((s1) =>
-      s1.map((s2) => 5 * Math.log10((s2.re *s2.re + s2.sub *s2.sub)))
+      s1.map((s2) => 5 * Math.log10(s2.re * s2.re + s2.sub * s2.sub))
     );
     return logSpectrogram;
   }
-
+  /**
+   * スペクトログラムを返す \
+   * 1次側は時間軸でframe数-fftSize個のデータがある。 \
+   * 2次側は周波数方向の分解能でsampleRate/fftSizeの周波数毎のスペクトルを複素数で表す。
+   * @param data 1で正規化されたwavのデータ
+   * @param fftSize fftのフレーム数、2のべき乗である必要がある。default,512
+   * @param windowType 窓関数の種類、hanningもしくはhamming。default,hamming
+   * @param windowSize 窓関数のフレーム数。default,128
+   * @param preEmphasis プリエンファシスの強さ。default,0.97
+   * @returns スペクトログラム。
+   */
+  SpectrogramWasm(
+    data: Array<number>,
+    fftSize: number = 512,
+    windowType: string = "hamming",
+    windowSize: number = 128,
+    preEmphasis: number = 0.97
+  ): Array<Array<number>> {
+    // const spectrogram: Array<Spectrum> = new Array();
+    const preEmphasisdData: Float64Array = this.PreEmphasis(data, preEmphasis);
+    const window = this.MakeWindow(windowType, windowSize);
+    const frameCount = Math.floor((data.length - fftSize) / windowSize) + 1;
+    const flatLogSpectrogram = calc_spectrogram(
+      fftSize,
+      preEmphasisdData,
+      window
+    );
+    // const f = new FFTWasm(fftSize);
+    // for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
+    //   const windowdData = Float64Array.from(preEmphasisdData
+    //     .slice(i, i + fftSize)
+    //     .map((t, i) => t * window[i % windowSize]));
+    //   spectrogram.push(f.fft_real(windowdData));
+    // }
+    // /** 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5と5 * Math.log10((s2.re ** 2 + s2.sub ** 2))は数学的に等価 */
+    // const logSpectrogram: Array<Array<number>> = spectrogram.map((s1) =>
+    //   Array.from(s1.real.map((_,i) => 5 * Math.log10((s1.real[i] *s1.real[i] + s1.imag[i] *s1.imag[i]))))
+    // );
+    const logSpectrogram = this.flatTo2D(
+      flatLogSpectrogram,
+      frameCount,
+      fftSize / 2 + 1
+    );
+    return logSpectrogram;
+  }
+  /**
+   * 1D の Float64Array を 2D の number[][] に変換する
+   * @param flat   平坦化されたスペクトログラム（長さ = frameCount × freqCount）
+   * @param frameCount 時間軸のフレーム数
+   * @param freqCount  周波数ビン数（1 フレームあたりの要素数）
+   */
+  flatTo2D(
+    flat: Float64Array,
+    frameCount: number,
+    freqCount: number
+  ): number[][] {
+    const out: number[][] = new Array(frameCount);
+    for (let t = 0; t < frameCount; t++) {
+      const row = new Array<number>(freqCount);
+      const base = t * freqCount;
+      for (let f = 0; f < freqCount; f++) {
+        row[f] = flat[base + f];
+      }
+      out[t] = row;
+    }
+    return out;
+  }
   /**
    * プリエンファシスフィルタ。高周波数帯を強調する効果がある。
    * @param data 1で正規化されたwavのデータ
    * @param p プリエンファシスの強さ。default,0.97
    * @returns プリエンファシスフィルタ適用済みのwavデータ
    */
-  PreEmphasis(data: Array<number>, p: number = 0.97): Array<number> {
-    return data.map((_, i) => (i === 0 ? data[0] : data[i] - p * data[i - 1]));
+  PreEmphasis(data: Array<number>, p: number = 0.97): Float64Array {
+    const n = data.length;
+    const out = new Float64Array(n);
+    if (n === 0) return out;
+
+    // out[0] は元データそのまま
+    let prev = data[0];
+    out[0] = prev;
+
+    // i=1～ をループで回して一度のメモリ確保で済ませる
+    for (let i = 1; i < n; i++) {
+      const cur = data[i];
+      // data[i] - p * data[i-1]
+      const val = cur - p * prev;
+      out[i] = val;
+      prev = cur;
+    }
+
+    return out;
   }
 
   /**
@@ -91,15 +175,21 @@ export default class WaveAnalyse {
    * @param size 窓関数のフレーム数
    * @returns 窓関数
    */
-  MakeWindow(type: string, size: number): Array<number> {
-    const window = new Array<number>();
-    for (let i = 0; i < size; i++) {
-      if (type === "hanning") {
-        window.push(0.5 - 0.5 * Math.cos((2 * Math.PI * i) / size));
-      } else if (type === "hamming") {
-        window.push(0.54 - 0.46 * Math.cos((2 * Math.PI * i) / size));
-      } else {
-        window.push(1);
+  MakeWindow(type: string, size: number): Float64Array {
+    const window = new Float64Array(size);
+    const twoPi = 2 * Math.PI;
+    if (type === "hanning") {
+      for (let i = 0; i < size; i++) {
+        window[i] = 0.5 - 0.5 * Math.cos((twoPi * i) / size);
+      }
+    } else if (type === "hamming") {
+      for (let i = 0; i < size; i++) {
+        window[i] = 0.54 - 0.46 * Math.cos((twoPi * i) / size);
+      }
+    } else {
+      // 矩形窓
+      for (let i = 0; i < size; i++) {
+        window[i] = 1;
       }
     }
     return window;
@@ -159,7 +249,8 @@ export default class WaveAnalyse {
       /** ピーク値のindex */
       const maxIndex =
         autocorrelation.slice(T0_ceil, T0_floor).indexOf(max) + T0_ceil;
-      if (max >= threshold) {/** maxが有意の場合倍音を用いて補正する。 */
+      if (max >= threshold) {
+        /** maxが有意の場合倍音を用いて補正する。 */
         /** 倍音を用いて補正したindex */
         let nMaxIndex = maxIndex;
         for (let N = 2; N < Math.floor(halfFftSize / maxIndex) - 1; N++) {
@@ -183,7 +274,8 @@ export default class WaveAnalyse {
         }
         /** 倍音補正で求めた基準周波数 */
         const f0_ = sampleRate / nMaxIndex;
-        if (f0_ >= f0_floor && f0_ <= f0_ceil) {/** 基準周波数が閾値の範囲内か? */
+        if (f0_ >= f0_floor && f0_ <= f0_ceil) {
+          /** 基準周波数が閾値の範囲内か? */
           f0.push(f0_);
         } else {
           f0.push(f0_floor);
