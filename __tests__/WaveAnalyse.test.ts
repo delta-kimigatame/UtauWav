@@ -20,7 +20,7 @@ describe("WaveAnalyseのテスト", () => {
 
   it("makeWindow_none", () => {
     const wa = new WaveAnalyse();
-    expect(wa.MakeWindow("a", 10)).toEqual(Float64Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
+    expect(wa.MakeWindow("a", 10)).toEqual(Float32Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
   });
   it("makeWindow_hanning", () => {
     const wa = new WaveAnalyse();
@@ -137,7 +137,7 @@ describe("WaveAnalyseのテスト", () => {
     }
   });
 
-  it.only("spectrogram",()=>{
+  it("spectrogram",()=>{
     // 詳細な値は検証できないので速度検証と落ちないことの確認がメイン
     const wa = new WaveAnalyse();
     const buffer = fs.readFileSync(
@@ -149,7 +149,7 @@ describe("WaveAnalyseのテスト", () => {
       safeData[i] = buffer[i];
     }
     const wav = new Wave(safeData.buffer);
-    wa.Spectrogram(wav.data!)
+    wa.SpectrogramTS(wav.data!)
   })
   it("spectrogramWasm",()=>{
     // 詳細な値は検証できないので速度検証と落ちないことの確認がメイン
@@ -163,7 +163,7 @@ describe("WaveAnalyseのテスト", () => {
       safeData[i] = buffer[i];
     }
     const wav = new Wave(safeData.buffer);
-    wa.SpectrogramWasm(wav.data!)
+    wa.Spectrogram(wav.data!)
   },300000)
   it("f0_8192", () => {
     const wa = new WaveAnalyse();

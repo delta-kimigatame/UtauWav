@@ -1,6 +1,6 @@
 {
   "name": "utauwav",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "./dist/utauwav.es.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "makedoc": "npx typedoc --entryPointStrategy expand ./src",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "bench": "vitest bench"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,6 @@
     "vitest": "^3.0.5"
   },
   "dependencies": {
-    "@delta-kimigatame/fft-wasm-lib": "file:../../rust/fft-wasm-lib/pkg/delta-kimigatame-fft-wasm-lib-0.1.0.tgz"
+    "@delta_kimigatame/fft-wasm-lib": "^0.1.1"
   }
 }

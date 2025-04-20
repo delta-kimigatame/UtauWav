@@ -4,7 +4,7 @@
 
 import Complex from "./Complex";
 import { FFT } from "./lib/fft";
-import { calc_spectrogram } from "@delta-kimigatame/fft-wasm-lib";
+import { calc_spectrogram_with_rfft } from "@delta_kimigatame/fft-wasm-lib";
 
 export default class WaveAnalyse {
   constructor() {}
@@ -52,7 +52,7 @@ export default class WaveAnalyse {
    * @param preEmphasis プリエンファシスの強さ。default,0.97
    * @returns スペクトログラム。
    */
-  Spectrogram(
+  SpectrogramTS(
     data: Array<number>,
     fftSize: number = 512,
     windowType: string = "hamming",
@@ -60,7 +60,7 @@ export default class WaveAnalyse {
     preEmphasis: number = 0.97
   ): Array<Array<number>> {
     const spectrogram: Array<Array<Complex>> = new Array();
-    const preEmphasisdData: Float64Array = this.PreEmphasis(data, preEmphasis);
+    const preEmphasisdData: Float32Array = this.PreEmphasis(data, preEmphasis);
     const window = this.MakeWindow(windowType, windowSize);
     const f = new FFT(fftSize);
     for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
@@ -86,7 +86,7 @@ export default class WaveAnalyse {
    * @param preEmphasis プリエンファシスの強さ。default,0.97
    * @returns スペクトログラム。
    */
-  SpectrogramWasm(
+  Spectrogram(
     data: Array<number>,
     fftSize: number = 512,
     windowType: string = "hamming",
@@ -94,25 +94,14 @@ export default class WaveAnalyse {
     preEmphasis: number = 0.97
   ): Array<Array<number>> {
     // const spectrogram: Array<Spectrum> = new Array();
-    const preEmphasisdData: Float64Array = this.PreEmphasis(data, preEmphasis);
+    const preEmphasisdData: Float32Array = this.PreEmphasis(data, preEmphasis);
     const window = this.MakeWindow(windowType, windowSize);
     const frameCount = Math.floor((data.length - fftSize) / windowSize) + 1;
-    const flatLogSpectrogram = calc_spectrogram(
+    const flatLogSpectrogram = calc_spectrogram_with_rfft(
       fftSize,
       preEmphasisdData,
       window
     );
-    // const f = new FFTWasm(fftSize);
-    // for (let i = 0; i + fftSize < preEmphasisdData.length; i += windowSize) {
-    //   const windowdData = Float64Array.from(preEmphasisdData
-    //     .slice(i, i + fftSize)
-    //     .map((t, i) => t * window[i % windowSize]));
-    //   spectrogram.push(f.fft_real(windowdData));
-    // }
-    // /** 10 * Math.log10((s2.re ** 2 + s2.sub ** 2) ** 0.5と5 * Math.log10((s2.re ** 2 + s2.sub ** 2))は数学的に等価 */
-    // const logSpectrogram: Array<Array<number>> = spectrogram.map((s1) =>
-    //   Array.from(s1.real.map((_,i) => 5 * Math.log10((s1.real[i] *s1.real[i] + s1.imag[i] *s1.imag[i]))))
-    // );
     const logSpectrogram = this.flatTo2D(
       flatLogSpectrogram,
       frameCount,
@@ -121,13 +110,13 @@ export default class WaveAnalyse {
     return logSpectrogram;
   }
   /**
-   * 1D の Float64Array を 2D の number[][] に変換する
+   * 1D の Float32Array を 2D の number[][] に変換する
    * @param flat   平坦化されたスペクトログラム（長さ = frameCount × freqCount）
    * @param frameCount 時間軸のフレーム数
    * @param freqCount  周波数ビン数（1 フレームあたりの要素数）
    */
   flatTo2D(
-    flat: Float64Array,
+    flat: Float32Array,
     frameCount: number,
     freqCount: number
   ): number[][] {
@@ -148,9 +137,9 @@ export default class WaveAnalyse {
    * @param p プリエンファシスの強さ。default,0.97
    * @returns プリエンファシスフィルタ適用済みのwavデータ
    */
-  PreEmphasis(data: Array<number>, p: number = 0.97): Float64Array {
+  PreEmphasis(data: Array<number>, p: number = 0.97): Float32Array {
     const n = data.length;
-    const out = new Float64Array(n);
+    const out = new Float32Array(n);
     if (n === 0) return out;
 
     // out[0] は元データそのまま
@@ -175,8 +164,8 @@ export default class WaveAnalyse {
    * @param size 窓関数のフレーム数
    * @returns 窓関数
    */
-  MakeWindow(type: string, size: number): Float64Array {
-    const window = new Float64Array(size);
+  MakeWindow(type: string, size: number): Float32Array {
+    const window = new Float32Array(size);
     const twoPi = 2 * Math.PI;
     if (type === "hanning") {
       for (let i = 0; i < size; i++) {

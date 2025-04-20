@@ -7,11 +7,15 @@ export default defineConfig({
   plugins: [ wasm() ],
   test: {
     globals: true, // Jestの `global` な関数 (`describe`, `test` など) を有効にする
-    environment: "jsdom",      // ←ここを node から jsdom に変更
+    environment: "jsdom",
     deps: {
-      inline: [                 // node_modules 内のこのパッケージも変換を通す
-        "@delta-kimigatame/fft-wasm-lib"
-      ]}
+      inline: [
+        "@delta_kimigatame/fft-wasm-lib"
+      ]},
+      
+    benchmark: {
+      include: ['bench/**/*.bench.(js|ts)']
+    }
   },
   build: {
     lib: {

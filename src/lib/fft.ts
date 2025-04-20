@@ -150,7 +150,7 @@ export class FFT {
    * @param twiddle 回転因子
    * @returns
    */
-  fftinReal = (c: Array<number>|Float64Array, twiddle: Array<Complex>): Array<Complex> => {
+  fftinReal = (c: Array<number>|Float32Array, twiddle: Array<Complex>): Array<Complex> => {
     const rec: Array<Complex> = new Array(this.size);
     for (let i = 0; i < this.size; i++) {
       rec[i] = new Complex(c[this.revIndices[i]]);
@@ -173,7 +173,7 @@ export class FFT {
    * @param f 実部がwavのフレームデータ、虚部が0の複素数
    * @returns 周波数スペクトル
    */
-  fftReal = (f: Array<number>|Float64Array): Array<Complex> => {
+  fftReal = (f: Array<number>|Float32Array): Array<Complex> => {
     return this.fftinReal(f, this.twiddle);
   };
 
