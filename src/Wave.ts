@@ -26,7 +26,7 @@ export default class Wave {
       this.rData_ = null;
       return;
     } else if (
-      data.slice(this.header.dataIndex).byteLength % this.blockSize !==
+      data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize).byteLength % this.blockSize !==
       0
     ) {
       console.warn(
@@ -37,8 +37,8 @@ export default class Wave {
       return;
     }
     const frames: number =
-      data.slice(this.header.dataIndex).byteLength / this.blockSize;
-    const dv = new DataView(data.slice(this.header.dataIndex));
+      data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize).byteLength / this.blockSize;
+    const dv = new DataView(data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize));
     this.data_ = new Array();
     if (this.channels === 2) {
       this.rData_ = new Array();

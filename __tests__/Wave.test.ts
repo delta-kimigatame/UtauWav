@@ -419,4 +419,16 @@ describe("Waveのテスト", () => {
       console.log(wav.data);
     }
   });
+  it("ReadAfterMeta_errordata_20250608", () => {
+    const buffer = fs.readFileSync(
+      "./__tests__/test_data/error_test_data_aftermeta_20250608.wav"
+    );
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.data).not.toBeNull()
+  });
 });
