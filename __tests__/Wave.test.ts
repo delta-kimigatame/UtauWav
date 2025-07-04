@@ -431,4 +431,16 @@ describe("Waveのテスト", () => {
     const wav = new Wave(safeData.buffer);
     expect(wav.data).not.toBeNull()
   });
+  it("ReadAfterMeta_errordata_20250704", () => {
+    const buffer = fs.readFileSync(
+      "./__tests__/test_data/error_test_data_20250704.wav"
+    );
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.data).not.toBeNull()
+  });
 });

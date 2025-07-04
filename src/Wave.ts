@@ -25,10 +25,14 @@ export default class Wave {
       this.data_ = null;
       this.rData_ = null;
       return;
-    } else if (
-      data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize).byteLength % this.blockSize !==
-      0
-    ) {
+    }
+    const frames: number = Math.floor(
+      data.slice(
+        this.header.dataIndex,
+        this.header.dataIndex + this.header.dataChunkSize
+      ).byteLength / this.blockSize
+    );
+    if (frames === 0) {
       console.warn(
         "このwavのデータ部分に欠損があるため読み込まれませんでした。"
       );
@@ -36,9 +40,12 @@ export default class Wave {
       this.rData_ = null;
       return;
     }
-    const frames: number =
-      data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize).byteLength / this.blockSize;
-    const dv = new DataView(data.slice(this.header.dataIndex,this.header.dataIndex+this.header.dataChunkSize));
+    const dv = new DataView(
+      data.slice(
+        this.header.dataIndex,
+        this.header.dataIndex + this.header.dataChunkSize
+      )
+    );
     this.data_ = new Array();
     if (this.channels === 2) {
       this.rData_ = new Array();
@@ -237,7 +244,7 @@ export default class Wave {
    * @param value
    */
   set sampleRate(value: number) {
-    if(value===this.sampleRate) return
+    if (value === this.sampleRate) return;
     if (this.data !== null) {
       const wavsec: number = this.data.length / this.sampleRate;
       const framePerSec: number = 1 / this.sampleRate;
@@ -312,7 +319,7 @@ export default class Wave {
    * @param value 8か16か24。それ以外の値の場合何もしない。
    */
   set bitDepth(value: number) {
-    if(value===this.bitDepth) return
+    if (value === this.bitDepth) return;
     if (value % 8 !== 0 || value > 32) {
       //waveのbit深度は8,16,24,32のためそれ以外の値は何もせず返す。
       return;
