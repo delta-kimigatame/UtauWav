@@ -443,4 +443,19 @@ describe("Waveのテスト", () => {
     const wav = new Wave(safeData.buffer);
     expect(wav.data).not.toBeNull()
   });
+  it("errordata_20250809", () => {
+    const buffer = fs.readFileSync(
+      "./__tests__/test_data/error_test_data_20250809.wav"
+    );
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(44100);
+    wav.sampleRate = 44100;
+    wav.Output();
+  });
 });

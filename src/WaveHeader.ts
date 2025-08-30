@@ -116,7 +116,7 @@ export default class WaveHeader {
     dv.setUint8(1, "I".charCodeAt(0));
     dv.setUint8(2, "F".charCodeAt(0));
     dv.setUint8(3, "F".charCodeAt(0));
-    dv.setUint32(4, this.chunksize, true);
+    dv.setUint32(4, this.dataChunkSize+36, true);
     dv.setUint8(8, "W".charCodeAt(0));
     dv.setUint8(9, "A".charCodeAt(0));
     dv.setUint8(10, "V".charCodeAt(0));
@@ -125,7 +125,7 @@ export default class WaveHeader {
     dv.setUint8(13, "m".charCodeAt(0));
     dv.setUint8(14, "t".charCodeAt(0));
     dv.setUint8(15, " ".charCodeAt(0));
-    dv.setUint32(16, this.fmtChunkSize, true);
+    dv.setUint32(16, 16, true);
     dv.setUint16(20, this.format, true);
     dv.setUint16(22, this.channels, true);
     dv.setUint32(24, this.sampleRate, true);
