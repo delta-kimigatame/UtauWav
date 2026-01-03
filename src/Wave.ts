@@ -280,7 +280,7 @@ export default class Wave {
             newRData.push(
               this.rData[Math.floor(startFlame)] +
                 Math.round(
-                  (this.rData[Math.ceil(startFlame)] -
+                  (this.rData[Math.min(Math.ceil(startFlame), this.rData.length - 1)] -
                     this.rData[Math.floor(startFlame)]) *
                     offsetFrames
                 )
