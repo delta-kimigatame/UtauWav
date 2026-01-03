@@ -458,4 +458,18 @@ describe("Waveのテスト", () => {
     wav.sampleRate = 44100;
     wav.Output();
   });
+
+  it("errordata_20260103",()=>{
+    const buffer = fs.readFileSync(
+      "./__tests__/test_data/error_test_output_20260103.wav"
+    );
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    wav.bitDepth = 16;
+    wav.Output();
+  })
 });

@@ -77,9 +77,9 @@ export default class Wave {
    * @returns リトルエンディアンのwavデータ。ヘッダ部は不要データを含まず44Byte
    */
   Output(): ArrayBuffer {
-    const body = new ArrayBuffer(this.header.dataChunkSize);
+    const frames: number = this.data?.length ?? 0;
+    const body = new ArrayBuffer(frames * this.blockSize);
     const dv = new DataView(body);
-    const frames: number = this.header.dataChunkSize / this.blockSize;
     for (let i = 0; i < frames; i++) {
       if (this.data === null) {
       } else if (this.bitDepth === 8) {
