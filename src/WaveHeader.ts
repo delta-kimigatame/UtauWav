@@ -66,11 +66,7 @@ export default class WaveHeader {
 
     this.fmtChunkSize_ = dv.getUint32(fmtStart + 4, true);
     this.format_ = dv.getUint16(fmtStart + 8, true);
-    if (this.format_ === 3) {
-      throw new Error(
-        "このwavファイルは32bit floatで記録されており、読み込みできません。"
-      );
-    } else if (this.format_ === 6) {
+    if (this.format_ === 6) {
       throw new Error(
         "このwavファイルはA-lawコーデックで圧縮されており、読み込みできません。"
       );
@@ -78,7 +74,7 @@ export default class WaveHeader {
       throw new Error(
         "このwavファイルはu-lawコーデックで圧縮されており、読み込みできません。"
       );
-    } else if (this.format_ !== 1) {
+    } else if (this.format_ !== 1 && this.format_ !== 3) {
       throw new Error(
         "このwavファイルは未知のコーデックで圧縮されており、読み込みできません。"
       );

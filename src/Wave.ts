@@ -29,12 +29,12 @@ export default class Wave {
     const frames: number = Math.floor(
       data.slice(
         this.header.dataIndex,
-        this.header.dataIndex + this.header.dataChunkSize
-      ).byteLength / this.blockSize
+        this.header.dataIndex + this.header.dataChunkSize,
+      ).byteLength / this.blockSize,
     );
     if (frames === 0) {
       console.warn(
-        "このwavのデータ部分に欠損があるため読み込まれませんでした。"
+        "このwavのデータ部分に欠損があるため読み込まれませんでした。",
       );
       this.data_ = null;
       this.rData_ = null;
@@ -43,8 +43,8 @@ export default class Wave {
     const dv = new DataView(
       data.slice(
         this.header.dataIndex,
-        this.header.dataIndex + this.header.dataChunkSize
-      )
+        this.header.dataIndex + this.header.dataChunkSize,
+      ),
     );
     this.data_ = new Array();
     if (this.channels === 2) {
@@ -67,6 +67,11 @@ export default class Wave {
         this.data_.push(this.GetInt24(dv, i * this.blockSize));
         if (this.channels === 2) {
           this.rData_?.push(this.GetInt24(dv, i * this.blockSize + 3));
+        }
+      } else if (this.bitDepth === 32) {
+        this.data_.push(dv.getFloat32(i * this.blockSize, true));
+        if (this.channels === 2) {
+          this.rData_?.push(dv.getFloat32(i * this.blockSize + 4, true));
         }
       }
     }
@@ -273,17 +278,19 @@ export default class Wave {
                   Math.min(Math.ceil(startFlame), this.data.length - 1)
                 ] -
                   this.data[Math.floor(startFlame)]) *
-                  offsetFrames
-              )
+                  offsetFrames,
+              ),
           );
           if (newRData !== null && this.rData !== null) {
             newRData.push(
               this.rData[Math.floor(startFlame)] +
                 Math.round(
-                  (this.rData[Math.min(Math.ceil(startFlame), this.rData.length - 1)] -
+                  (this.rData[
+                    Math.min(Math.ceil(startFlame), this.rData.length - 1)
+                  ] -
                     this.rData[Math.floor(startFlame)]) *
-                    offsetFrames
-                )
+                    offsetFrames,
+                ),
             );
           }
         }
@@ -324,17 +331,34 @@ export default class Wave {
       //waveのbit深度は8,16,24,32のためそれ以外の値は何もせず返す。
       return;
     }
-    const newData = new Array();
-    this.data_?.forEach((d) => {
-      newData.push((d / 2 ** this.bitDepth) * 2 ** value);
-    });
-    this.data_ = newData;
-    if (this.rData !== null) {
-      const newRData = new Array();
-      this.rData_?.forEach((d) => {
-        newRData.push((d / 2 ** (this.bitDepth - 1)) * 2 ** (value - 1));
+    if (this.bitDepth !== 32) {
+      const newData = new Array();
+      this.data_?.forEach((d) => {
+        newData.push((d / 2 ** this.bitDepth) * 2 ** value);
       });
-      this.rData_ = newRData;
+      this.data_ = newData;
+      if (this.rData !== null) {
+        const newRData = new Array();
+        this.rData_?.forEach((d) => {
+          newRData.push((d / 2 ** (this.bitDepth - 1)) * 2 ** (value - 1));
+        });
+        this.rData_ = newRData;
+      }
+    } else {
+      // 32vit floatの場合は、元の値は-1～1の範囲にあるので、これを新しいbit深度の範囲に変換する。
+      const range: number = 2 ** (value - 1);
+      const newData = new Array();
+      this.data_?.forEach((d) => {
+        newData.push(Math.min(Math.max(d * range, -range), range - 1));
+      });
+      this.data_ = newData;
+      if (this.rData !== null) {
+        const newRData = new Array();
+        this.rData_?.forEach((d) => {
+          newRData.push(Math.min(Math.max(d * range, -range), range - 1));
+        });
+        this.rData_ = newRData;
+      }
     }
     this.header.bitDepth = value;
     this.header.blockSize = (this.channels * this.bitDepth) / 8;
@@ -382,7 +406,7 @@ export const GenerateWave = (
   sampleRate: number,
   bitDepth: number,
   data: Array<number>,
-  rData: Array<number> | null = null
+  rData: Array<number> | null = null,
 ): Wave => {
   let channels = 1;
   if (rData !== null) {

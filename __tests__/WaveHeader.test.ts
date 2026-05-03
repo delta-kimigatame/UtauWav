@@ -175,15 +175,22 @@ describe("WaveHeaderのテスト", () => {
   });
   it("read_header_unknown", () => {
     // 44Byteの正常waveヘッダ,32bit float
-    const errorData = new Uint8Array([
+    const safeData = new Uint8Array([
       0x52, 0x49, 0x46, 0x46, 0x24, 0xe0, 0x07, 0x00, 0x57, 0x41, 0x56, 0x45,
       0x66, 0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00,
-      0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x02, 0x00, 0x10, 0x00,
+      0x44, 0xac, 0x00, 0x00, 0x10, 0xB1, 0x02, 0x00, 0x04, 0x00, 0x20, 0x00,
       0x64, 0x61, 0x74, 0x61, 0x00, 0xe0, 0x07, 0x00,
     ]);
-    expect(() => new WaveHeader(errorData.buffer)).toThrow(
-      "このwavファイルは32bit floatで記録されており、読み込みできません。"
-    );
+    const whd = new WaveHeader(safeData.buffer);
+    expect(whd.chunksize).toBe(516132);
+    expect(whd.fmtChunkSize).toBe(16);
+    expect(whd.format).toBe(3);
+    expect(whd.channels).toBe(1);
+    expect(whd.sampleRate).toBe(44100);
+    expect(whd.bytePerSec).toBe(176400);
+    expect(whd.blockSize).toBe(4);
+    expect(whd.bitDepth).toBe(32);
+    expect(whd.dataChunkSize).toBe(516096);
   });
   it("data_check", () => {
     //44Byte以上あり、data識別子が無いwave

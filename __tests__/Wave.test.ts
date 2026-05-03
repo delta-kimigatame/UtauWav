@@ -363,7 +363,7 @@ describe("Waveのテスト", () => {
   });
   it("errordata_20240612", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_data_20240612.wav"
+      "./__tests__/test_data/error_test_data_20240612.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -400,7 +400,7 @@ describe("Waveのテスト", () => {
   });
   it("RemoveDCOffset_errordata_20240623", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_dcoffset_20240623.wav"
+      "./__tests__/test_data/error_test_dcoffset_20240623.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -421,7 +421,7 @@ describe("Waveのテスト", () => {
   });
   it("ReadAfterMeta_errordata_20250608", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_data_aftermeta_20250608.wav"
+      "./__tests__/test_data/error_test_data_aftermeta_20250608.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -429,11 +429,11 @@ describe("Waveのテスト", () => {
       safeData[i] = buffer[i];
     }
     const wav = new Wave(safeData.buffer);
-    expect(wav.data).not.toBeNull()
+    expect(wav.data).not.toBeNull();
   });
   it("ReadAfterMeta_errordata_20250704", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_data_20250704.wav"
+      "./__tests__/test_data/error_test_data_20250704.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -441,11 +441,11 @@ describe("Waveのテスト", () => {
       safeData[i] = buffer[i];
     }
     const wav = new Wave(safeData.buffer);
-    expect(wav.data).not.toBeNull()
+    expect(wav.data).not.toBeNull();
   });
   it("errordata_20250809", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_data_20250809.wav"
+      "./__tests__/test_data/error_test_data_20250809.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -459,9 +459,9 @@ describe("Waveのテスト", () => {
     wav.Output();
   });
 
-  it("errordata_20260103",()=>{
+  it("errordata_20260103", () => {
     const buffer = fs.readFileSync(
-      "./__tests__/test_data/error_test_output_20260103.wav"
+      "./__tests__/test_data/error_test_output_20260103.wav",
     );
     const ab = new ArrayBuffer(buffer.length);
     const safeData = new Uint8Array(ab);
@@ -471,5 +471,17 @@ describe("Waveのテスト", () => {
     const wav = new Wave(safeData.buffer);
     wav.bitDepth = 16;
     wav.Output();
-  })
+  });
+
+  it("read_32bit_mono_output_16bit_mono", () => {
+    const buffer = fs.readFileSync("./__tests__/test_data/1Hzsin_44100_32.wav");
+    const ab = new ArrayBuffer(buffer.length);
+    const safeData = new Uint8Array(ab);
+    for (let i = 0; i < buffer.length; i++) {
+      safeData[i] = buffer[i];
+    }
+    const wav = new Wave(safeData.buffer);
+    wav.bitDepth = 16;
+    wav.Output();
+  });
 });
