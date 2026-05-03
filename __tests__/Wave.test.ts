@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import Wave from "../src/Wave";
 import { GenerateWave } from "../src/Wave";
 import fs from "fs";
+import WaveHeader from "../src/WaveHeader";
 
 describe("Waveのテスト", () => {
   it("read_only_header", () => {
@@ -481,7 +482,26 @@ describe("Waveのテスト", () => {
       safeData[i] = buffer[i];
     }
     const wav = new Wave(safeData.buffer);
+    expect(wav.bitDepth).toBe(32);
+    expect(wav.chunksize).toBe(176486);
+    expect(wav.sampleRate).toBe(44100);
+    expect(wav.data?.length).toBe(44100);
+    expect(wav.bytePerSec).toBe(88200 * 2);
+    expect(wav.blockSize).toBe(4);
     wav.bitDepth = 16;
-    wav.Output();
+    expect(wav.bitDepth).toBe(16);
+    expect(wav.sampleRate).toBe(44100);
+    expect(wav.chunksize).toBe(176486);
+    expect(wav.data?.length).toBe(44100);
+    expect(wav.bytePerSec).toBe(88200);
+    expect(wav.blockSize).toBe(2);
+    const ab2 = wav.Output();
+    const whd = new WaveHeader(ab2);
+    expect(whd.bitDepth).toBe(16);
+    expect(whd.sampleRate).toBe(44100);
+    expect(whd.channels).toBe(1);
+    expect(whd.bytePerSec).toBe(88200);
+    expect(whd.blockSize).toBe(2);
+    expect(whd.dataChunkSize).toBe(wav.data?.length * wav.blockSize);
   });
 });

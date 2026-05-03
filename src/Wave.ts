@@ -227,12 +227,14 @@ export default class Wave {
       this.rData_ = null;
       this.header.blockSize = (value * this.bitDepth) / 8;
       this.header.bytePerSec = this.blockSize * this.sampleRate;
+      this.header.dataChunkSize = (this.data?.length ?? 0) * this.blockSize;
     } else if (value === 2) {
       if (this.data_ !== null) {
         this.header.channels = value;
         this.rData_ = [...this.data_];
         this.header.blockSize = (value * this.bitDepth) / 8;
         this.header.bytePerSec = this.blockSize * this.sampleRate;
+        this.header.dataChunkSize = (this.data?.length ?? 0) * this.blockSize;
       }
     }
   }
@@ -364,6 +366,7 @@ export default class Wave {
     this.header.bitDepth = value;
     this.header.blockSize = (this.channels * this.bitDepth) / 8;
     this.header.bytePerSec = this.blockSize * this.sampleRate;
+    this.header.dataChunkSize = (this.data?.length ?? 0) * this.blockSize;
   }
   /**データ部分 */
   get data(): Array<number> | null {
