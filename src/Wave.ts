@@ -359,6 +359,7 @@ export default class Wave {
         });
         this.rData_ = newRData;
       }
+      this.header.format = 1; //32bit→intに変更するため、フォーマットも変更する。
     }
     this.header.bitDepth = value;
     this.header.blockSize = (this.channels * this.bitDepth) / 8;

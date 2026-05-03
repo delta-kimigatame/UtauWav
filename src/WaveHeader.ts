@@ -155,6 +155,10 @@ export default class WaveHeader {
   get format(): number {
     return this.format_;
   }
+
+  set format(value: number) {
+    this.format_ = value;
+  }
   /**チャンネル数 */
   get channels(): number {
     return this.channels_;
