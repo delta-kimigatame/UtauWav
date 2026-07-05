@@ -4,7 +4,12 @@
 
 import Complex from "./Complex";
 import { FFT } from "./lib/fft";
-import { calc_spectrogram_with_rfft } from "@delta_kimigatame/fft-wasm-lib";
+import {
+  calc_spectrogram_with_rfft,
+  calc_power_spectrogram_with_rfft,
+  calc_mel_spectrogram_with_rfft,
+  calc_power_to_mel_spectrogram,
+} from "@delta_kimigatame/fft-wasm-lib";
 
 export default class WaveAnalyse {
   constructor() {}
@@ -109,6 +114,145 @@ export default class WaveAnalyse {
     );
     return logSpectrogram;
   }
+  /**
+   * スペクトログラムを平坦化したまま返す（パワー値）\
+   * パワースペクトル（複素数の絶対値の二乗）を平坦化した形で返す。 \
+   * ログスケール変換は行わない。
+   * @param data 1で正規化されたwavのデータ
+   * @param fftSize fftのフレーム数、2のべき乗である必要がある。default,512
+   * @param windowType 窓関数の種類、hanningもしくはhamming。default,hamming
+   * @param windowSize 窓関数のフレーム数。default,128
+   * @param preEmphasis プリエンファシスの強さ。default,0.97
+   * @returns パワースペクトログラム（平坦化）と、フレーム数、周波数ビン数
+   */
+  spectrogramLinearFlat(
+    data: Array<number>,
+    fftSize: number = 512,
+    windowType: string = "hamming",
+    windowSize: number = 128,
+    preEmphasis: number = 0.97
+  ): {
+    power: Float32Array;
+    frames: number;
+    freqBins: number;
+  } {
+    const preEmphasisdData: Float32Array = this.PreEmphasis(data, preEmphasis);
+    const window = this.MakeWindow(windowType, windowSize);
+    const frameCount = Math.floor((data.length - fftSize) / windowSize) + 1;
+    const freqBins = fftSize / 2 + 1;
+    const flatPowerSpectrogram = calc_power_spectrogram_with_rfft(
+      fftSize,
+      preEmphasisdData,
+      window
+    );
+    return {
+      power: flatPowerSpectrogram,
+      frames: frameCount,
+      freqBins: freqBins,
+    };
+  }
+
+  /**
+   * メルスペクトログラムを平坦化したまま返す。
+   * @param data 1で正規化されたwavのデータ
+   * @param sampleRate wavのサンプリング周波数。default,44100
+   * @param nFft fftのフレーム数、2のべき乗である必要がある。default,512
+   * @param hopLength フレームシフト幅。default,128
+   * @param nMels メルビン数。default,80
+   * @param fMin メル変換の最低周波数。default,0
+   * @param fMax メル変換の最高周波数。default,sampleRate/2
+   * @param windowType 窓関数の種類、hanningもしくはhamming。default,hamming
+   * @param windowSize 窓関数のフレーム数。default,128
+   * @param preEmphasis プリエンファシスの強さ。default,0.97
+   * @param applyLog true の場合 dB スケールに変換する。default,true
+   * @param logEps log計算時の下限値。default,1e-10
+   * @returns メルスペクトログラム（平坦化）と、フレーム数、メルビン数
+   */
+  melSpectrogramLinearFlat(
+    data: Array<number>,
+    sampleRate: number = 44100,
+    nFft: number = 512,
+    hopLength: number = 128,
+    nMels: number = 80,
+    fMin: number = 0,
+    fMax: number = sampleRate / 2,
+    windowType: string = "hamming",
+    windowSize: number = 128,
+    preEmphasis: number = 0.97,
+    applyLog: boolean = true,
+    logEps: number = 1e-10
+  ): {
+    mel: Float32Array;
+    frames: number;
+    melBins: number;
+  } {
+    const preEmphasisdData: Float32Array = this.PreEmphasis(data, preEmphasis);
+    const window = this.MakeWindow(windowType, windowSize);
+    const frameCount = Math.floor((data.length - nFft) / hopLength) + 1;
+    const flatMelSpectrogram = calc_mel_spectrogram_with_rfft(
+      nFft,
+      hopLength,
+      nMels,
+      sampleRate,
+      fMin,
+      fMax,
+      applyLog,
+      logEps,
+      preEmphasisdData,
+      window
+    );
+    return {
+      mel: flatMelSpectrogram,
+      frames: frameCount,
+      melBins: nMels,
+    };
+  }
+
+  /**
+   * 平坦化パワースペクトログラムをメルスペクトログラムへ変換する。
+   * @param powerSpec 平坦化パワースペクトログラム（frame-major）
+   * @param nFft fftのフレーム数、2のべき乗である必要がある。default,512
+   * @param nMels メルビン数。default,80
+   * @param sampleRate wavのサンプリング周波数。default,44100
+   * @param fMin メル変換の最低周波数。default,0
+   * @param fMax メル変換の最高周波数。default,sampleRate/2
+   * @param applyLog true の場合 dB スケールに変換する。default,true
+   * @param logEps log計算時の下限値。default,1e-10
+   * @returns メルスペクトログラム（平坦化）と、フレーム数、メルビン数
+   */
+  powerToMelSpectrogramLinearFlat(
+    powerSpec: Float32Array,
+    nFft: number = 512,
+    nMels: number = 80,
+    sampleRate: number = 44100,
+    fMin: number = 0,
+    fMax: number = sampleRate / 2,
+    applyLog: boolean = true,
+    logEps: number = 1e-10
+  ): {
+    mel: Float32Array;
+    frames: number;
+    melBins: number;
+  } {
+    const freqBins = nFft / 2 + 1;
+    const frameCount = Math.floor(powerSpec.length / freqBins);
+    const flatMelSpectrogram = calc_power_to_mel_spectrogram(
+      nFft,
+      nMels,
+      sampleRate,
+      fMin,
+      fMax,
+      applyLog,
+      logEps,
+      powerSpec
+    );
+    return {
+      mel: flatMelSpectrogram,
+      frames: frameCount,
+      melBins: nMels,
+    };
+  }
+
   /**
    * 1D の Float32Array を 2D の number[][] に変換する
    * @param flat   平坦化されたスペクトログラム（長さ = frameCount × freqCount）
