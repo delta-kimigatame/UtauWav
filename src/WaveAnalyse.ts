@@ -6,7 +6,7 @@ import Complex from "./Complex";
 import { FFT } from "./lib/fft";
 import {
   calc_spectrogram_with_rfft,
-  calc_power_spectrogram_with_rfft,
+  calc_spectrogram_with_rfft_stft,
   calc_mel_spectrogram_with_rfft,
   calc_power_to_mel_spectrogram,
 } from "@delta_kimigatame/fft-wasm-lib";
@@ -130,6 +130,7 @@ export default class WaveAnalyse {
     fftSize: number = 512,
     windowType: string = "hamming",
     windowSize: number = 128,
+    hopSize: number = windowSize,
     preEmphasis: number = 0.97
   ): {
     power: Float32Array;
@@ -138,10 +139,12 @@ export default class WaveAnalyse {
   } {
     const preEmphasisdData: Float32Array = this.PreEmphasis(data, preEmphasis);
     const window = this.MakeWindow(windowType, windowSize);
-    const frameCount = Math.floor((data.length - fftSize) / windowSize) + 1;
+    const frameCount = Math.floor((data.length - fftSize) / hopSize) + 1;
     const freqBins = fftSize / 2 + 1;
-    const flatPowerSpectrogram = calc_power_spectrogram_with_rfft(
+    const flatPowerSpectrogram = calc_spectrogram_with_rfft_stft(
       fftSize,
+      windowSize,
+      hopSize,
       preEmphasisdData,
       window
     );
